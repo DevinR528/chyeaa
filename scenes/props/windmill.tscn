@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://src/props/components/spin_motion.gd" id="2_spin"]
+
+[node name="Windmill" node_paths=PackedStringArray("spin") instance=ExtResource("1_block")]
+size = Vector2(16, 16)
+surface = 0
+spin = NodePath("SpinMotion")
+
+[node name="SpinMotion" type="Node" parent="."]
+script = ExtResource("2_spin")
+radius = 32.0
+turns_per_second = 0.2

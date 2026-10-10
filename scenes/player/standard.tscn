@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/player/player_body.gd" id="1_player"]
+[ext_resource type="Resource" path="res://resources/player/base_movement_stats.tres" id="2_stats"]
+[ext_resource type="Script" path="res://src/input/player_input.gd" id="3_input"]
+[ext_resource type="Script" path="res://src/player/carrier.gd" id="4_carrier"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(20, 28)
+
+[node name="StandardPlayer" type="CharacterBody2D"]
+process_physics_priority = 10
+collision_layer = 16
+floor_snap_length = 1.0
+platform_on_leave = 2
+script = ExtResource("1_player")
+stats = ExtResource("2_stats")
+
+[node name="PlaceholderBody" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-10, -14, 10, -14, 10, 14, -10, 14)
+color = Color(0.909804, 0.941176, 1, 1)
+
+[node name="Eye" type="Polygon2D" parent="PlaceholderBody"]
+position = Vector2(6, -8)
+polygon = PackedVector2Array(-1, -1, 1, -1, 1, 1, -1, 1)
+color = Color(0.101961, 0.133333, 0.188235, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_body")
+
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("3_input")
+
+[node name="Carrier" type="Node" parent="."]
+script = ExtResource("4_carrier")

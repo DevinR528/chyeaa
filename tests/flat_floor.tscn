@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(840, 32)
+
+[node name="FlatFloor" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(420, 80)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(420, 488)
+
+[node name="Body" type="Polygon2D" parent="Floor"]
+polygon = PackedVector2Array(-420, -16, 420, -16, 420, 16, -420, 16)
+color = Color(0.239216, 0.352941, 0.270588, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")

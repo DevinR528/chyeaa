@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_standard"]
+[ext_resource type="Script" path="res://src/player/grapple.gd" id="2_grapple"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_grappler"]
+size = Vector2(35, 25)
+
+[node name="Grappler" node_paths=PackedStringArray("ability") instance=ExtResource("1_standard")]
+uses_grapple_surfaces = true
+ability = NodePath("Grapple")
+
+[node name="PlaceholderBody" parent="." index="0"]
+position = Vector2(0.5, 0.5)
+polygon = PackedVector2Array(-17.5, -12.5, 17.5, -12.5, 17.5, 12.5, -17.5, 12.5)
+
+[node name="Eye" parent="PlaceholderBody" index="0"]
+position = Vector2(14.5, -7.5)
+
+[node name="CollisionShape2D" parent="." index="1"]
+position = Vector2(0.5, 0.5)
+shape = SubResource("RectangleShape2D_grappler")
+
+[node name="Grapple" type="Node2D" parent="."]
+script = ExtResource("2_grapple")

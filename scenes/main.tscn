@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/rooms/room_runner.gd" id="1_runner"]
+[ext_resource type="PackedScene" path="res://scenes/rooms/demo.tscn" id="2_demo"]
+[ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="3_standard"]
+[ext_resource type="Script" path="res://src/presentation/follow_camera.gd" id="4_camera"]
+[ext_resource type="PackedScene" path="res://scenes/player/grappler.tscn" id="5_grappler"]
+[ext_resource type="PackedScene" path="res://scenes/player/pogo.tscn" id="6_pogo"]
+[ext_resource type="Script" path="res://src/debug/reach_overlay.gd" id="7_reach"]
+
+[node name="Main" type="Node2D" node_paths=PackedStringArray("room", "camera")]
+process_physics_priority = -10
+script = ExtResource("1_runner")
+room = NodePath("Demo")
+camera = NodePath("Camera")
+characters = Array[PackedScene]([ExtResource("3_standard"), ExtResource("5_grappler"), ExtResource("6_pogo")])
+
+[node name="Demo" parent="." instance=ExtResource("2_demo")]
+
+[node name="Camera" type="Camera2D" parent="."]
+process_callback = 0
+process_physics_priority = 30
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+drag_left_margin = 0.16
+drag_top_margin = 0.1
+drag_right_margin = 0.16
+drag_bottom_margin = 0.1
+script = ExtResource("4_camera")
+
+[node name="ReachOverlay" type="Node2D" parent="." node_paths=PackedStringArray("runner")]
+process_physics_priority = 25
+script = ExtResource("7_reach")
+runner = NodePath("..")

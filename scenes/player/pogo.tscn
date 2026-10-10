@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://blcyetwciet0t"]
+
+[ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_standard"]
+[ext_resource type="Script" uid="uid://d0mo88aa3nlon" path="res://src/player/pogo_strike.gd" id="2_pogo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pogo"]
+size = Vector2(20, 40)
+
+[node name="Pogo" unique_id=1559780195 node_paths=PackedStringArray("ability") instance=ExtResource("1_standard")]
+stat_overrides = Dictionary[StringName, float]({
+&"ground_accel": 1400.0,
+&"max_run": 320.0
+})
+uses_pogo_surfaces = true
+ability = NodePath("PogoStrike")
+
+[node name="PlaceholderBody" parent="." index="0"]
+color = Color(0.862745, 0.784314, 0.960784, 1)
+polygon = PackedVector2Array(-10, -20, 10, -20, 10, 20, -10, 20)
+
+[node name="Eye" parent="PlaceholderBody" index="0"]
+position = Vector2(7, -15)
+
+[node name="CollisionShape2D" parent="." index="1"]
+shape = SubResource("RectangleShape2D_pogo")
+
+[node name="PogoStrike" type="Node2D" parent="." index="3" unique_id=902162361]
+script = ExtResource("2_pogo")

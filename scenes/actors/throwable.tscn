@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/actors/throwable.gd" id="1_throwable"]
+
+[node name="Throwable" type="CharacterBody2D"]
+process_physics_priority = 5
+collision_layer = 0
+floor_snap_length = 1.0
+platform_on_leave = 2
+script = ExtResource("1_throwable")
+size = Vector2(24, 24)

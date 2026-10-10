@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/actors/walker.gd" id="1_walker"]
+
+[node name="Walker" type="CharacterBody2D"]
+process_physics_priority = 5
+collision_layer = 0
+floor_snap_length = 1.0
+script = ExtResource("1_walker")
