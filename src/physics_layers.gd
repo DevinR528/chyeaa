@@ -15,3 +15,7 @@ const FALL := 1 << 3
 const PLAYER := 1 << 4
 ## ContactBox areas: stomps, hurts, and throwable hits between bodies.
 const CONTACT := 1 << 5
+## Sensor squares on grapple tiles. Mask 0, so bodies pass through; point queries find them.
+const GRAPPLE := 1 << 6
+## Sensor squares on pogo tiles. Mask 0, same as grapple.
+const POGO := 1 << 7

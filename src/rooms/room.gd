@@ -5,8 +5,10 @@ extends Node2D
 ## paint both over the same spot. The surface layers are enabled only for characters
 ## that use them (the prototype's exclusions). Death and exit tiles collide only on
 ## the hazard and exit layers, so bodies pass through and touch sensors report them.
-## Cell queries use Terrain's 8 px cells and see a tile wherever its collision
-## reaches, so art tiles may be larger than their layer's cells.
+## Kind and solidity come from the physics space, so a tile counts wherever its
+## shape reaches, including art tiles larger than an 8 px cell. Grapple and pogo
+## tiles carry sensor shapes (mask 0). Props are not tiles; abilities test them
+## separately.
 ##
 ## Every layer's TileSet follows kind_tiles.tres: a `kind` custom data layer holding a
 ## `Kind` on every tile, and physics layer 0 colliding on WORLD for solid tiles.
@@ -25,8 +27,8 @@ enum Kind {
 const KIND_DATA := &"kind"
 ## TileSet physics layer that collides on WORLD.
 const WORLD_PHYSICS := 0
-const ANY_PHYSICS := -1
 const KILL_PLANE_DEPTH := 16.0 * MovementStats.TILE
+const _TILE_MASK := PhysicsLayers.WORLD | PhysicsLayers.HAZARD | PhysicsLayers.EXIT | PhysicsLayers.GRAPPLE | PhysicsLayers.POGO
 
 ## TileSet to how many cells past its own a tile's collision reaches.
 var _reach_by_tile_set := {}
@@ -133,18 +135,12 @@ func cell_rect(cell: Vector2i) -> Rect2:
 	return Rect2(terrain.to_global(Vector2(cell) * tile), tile)
 
 
-## Topmost kind the current character sees. Outside the room counts as solid.
+## Topmost kind the current character sees, from the tile shapes covering the cell
+## centre. Outside the room counts as solid.
 func kind_at_cell(cell: Vector2i) -> Kind:
 	if not cell_bounds().has_point(cell):
 		return Kind.SOLID
-	for layer: TileMapLayer in [pogo_surfaces, grapple_surfaces, terrain, block_terrain]:
-		if not layer.enabled:
-			continue
-		for data in _tiles_at(layer, cell, ANY_PHYSICS):
-			var kind: Kind = data.get_custom_data(KIND_DATA)
-			if kind != Kind.EMPTY:
-				return kind
-	return Kind.EMPTY
+	return _kind_at_point(cell_rect(cell).get_center())
 
 
 func kind_at(point: Vector2) -> Kind:
@@ -154,63 +150,93 @@ func kind_at(point: Vector2) -> Kind:
 ## Whether the cell blocks the body. Left, right, and above the room are solid;
 ## below is open so falls reach the kill plane.
 func is_solid_cell(cell: Vector2i) -> bool:
-	var bounds := cell_bounds()
-	if cell.y < bounds.position.y or cell.x < bounds.position.x or cell.x >= bounds.end.x:
-		return true
-	if cell.y >= bounds.end.y:
-		return false
-	for layer: TileMapLayer in [grapple_surfaces, terrain, block_terrain]:
-		if not layer.enabled:
-			continue
-		if not _tiles_at(layer, cell, WORLD_PHYSICS).is_empty():
+	return _is_solid(cell, cell_rect(cell).get_center())
+
+
+## Same solidity rule at `point` itself, for a hook sample that is not a cell centre.
+func is_solid_at(point: Vector2) -> bool:
+	return _is_solid(cell_at(point), point)
+
+
+## A room tile shape on `mask` covers `point`. Props and the boundary walls do not.
+func has_tile(point: Vector2, mask: int) -> bool:
+	for hit in _point_hits(point, mask):
+		if _is_room_tile(hit["collider"]):
 			return true
 	return false
 
 
-## Tiles on `layer` covering the centre of a Terrain cell. A tile covers it where a
-## collision polygon on `physics` (any layer for ANY_PHYSICS) contains it, so art
-## larger than its cell counts everywhere it collides. With ANY_PHYSICS, a tile
-## with no collision at all covers just its own cell.
-func _tiles_at(layer: TileMapLayer, cell: Vector2i, physics: int) -> Array[TileData]:
-	var found: Array[TileData] = []
-	if layer.tile_set == null:
-		return found
-	var point := layer.to_local(cell_rect(cell).get_center())
-	var home := layer.local_to_map(point)
-	var reach := _reach(layer)
-	for y in range(home.y - reach, home.y + reach + 1):
-		for x in range(home.x - reach, home.x + reach + 1):
-			var at := Vector2i(x, y)
-			var data := layer.get_cell_tile_data(at)
-			if data != null and _covers(layer, at, data, point, physics):
-				found.append(data)
-	return found
+## A room tile shape on `mask` overlaps the convex polygon. `points` are around `origin`.
+func tiles_overlap(origin: Vector2, points: PackedVector2Array, mask: int) -> bool:
+	var shape := ConvexPolygonShape2D.new()
+	shape.points = points
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.shape = shape
+	params.transform = Transform2D(0.0, origin)
+	params.collision_mask = mask
+	params.collide_with_areas = false
+	params.collide_with_bodies = true
+	params.margin = 0.0
+	for hit in get_world_2d().direct_space_state.intersect_shape(params, 16):
+		if _is_room_tile(hit["collider"]):
+			return true
+	return false
 
 
-func _covers(layer: TileMapLayer, at: Vector2i, data: TileData, point: Vector2, physics: int) -> bool:
-	var local := _untransform(point - layer.map_to_local(at), data, layer.get_cell_alternative_tile(at))
-	var has_polygons := false
-	for index in layer.tile_set.get_physics_layers_count():
-		if physics != ANY_PHYSICS and index != physics:
+## Left, right, and above the room. Below is open.
+func is_out_of_bounds_solid(cell: Vector2i) -> bool:
+	var bounds := cell_bounds()
+	return cell.y < bounds.position.y or cell.x < bounds.position.x or cell.x >= bounds.end.x
+
+
+func _is_solid(cell: Vector2i, point: Vector2) -> bool:
+	if is_out_of_bounds_solid(cell):
+		return true
+	if cell.y >= cell_bounds().end.y:
+		return false
+	return has_tile(point, PhysicsLayers.WORLD)
+
+
+func _kind_at_point(point: Vector2) -> Kind:
+	var bits_by_layer := {}
+	for hit in _point_hits(point, _TILE_MASK):
+		var layer := hit["collider"] as TileMapLayer
+		if not _is_room_tile(layer):
 			continue
-		for polygon in data.get_collision_polygons_count(index):
-			has_polygons = true
-			if Geometry2D.is_point_in_polygon(local, data.get_collision_polygon_points(index, polygon)):
-				return true
-	return physics == ANY_PHYSICS and not has_polygons and at == layer.local_to_map(point)
+		bits_by_layer[layer] = int(bits_by_layer.get(layer, 0)) | PhysicsServer2D.body_get_collision_layer(hit["rid"])
+	for layer: TileMapLayer in [pogo_surfaces, grapple_surfaces, terrain, block_terrain]:
+		var kind := _kind_from_bits(int(bits_by_layer.get(layer, 0)))
+		if kind != Kind.EMPTY:
+			return kind
+	return Kind.EMPTY
 
 
-## Undoes a painted tile's flip and transpose, so `local` can be tested against its
-## untransformed collision polygons. Godot transposes first, then flips.
-func _untransform(local: Vector2, data: TileData, alternative: int) -> Vector2:
-	var flip_h := data.flip_h != bool(alternative & TileSetAtlasSource.TRANSFORM_FLIP_H)
-	var flip_v := data.flip_v != bool(alternative & TileSetAtlasSource.TRANSFORM_FLIP_V)
-	var transpose := data.transpose != bool(alternative & TileSetAtlasSource.TRANSFORM_TRANSPOSE)
-	if flip_h:
-		local.x = -local.x
-	if flip_v:
-		local.y = -local.y
-	return Vector2(local.y, local.x) if transpose else local
+func _kind_from_bits(bits: int) -> Kind:
+	if bits & PhysicsLayers.POGO:
+		return Kind.POGO
+	if bits & PhysicsLayers.GRAPPLE:
+		return Kind.GRAPPLE
+	if bits & PhysicsLayers.HAZARD:
+		return Kind.DEATH
+	if bits & PhysicsLayers.EXIT:
+		return Kind.EXIT
+	if bits & PhysicsLayers.WORLD:
+		return Kind.SOLID
+	return Kind.EMPTY
+
+
+func _point_hits(point: Vector2, mask: int) -> Array:
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = point
+	query.collision_mask = mask
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	return get_world_2d().direct_space_state.intersect_point(query, 16)
+
+
+func _is_room_tile(collider: Object) -> bool:
+	var layer := collider as TileMapLayer
+	return layer != null and layer.enabled and is_ancestor_of(layer)
 
 
 ## How many cells past its own any tile's collision reaches on `layer`.

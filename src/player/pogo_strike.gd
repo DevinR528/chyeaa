@@ -4,6 +4,8 @@ extends PlayerAbility
 ## sideways pops up off the face, up stops the rise. An up strike into a ceiling bonks.
 
 signal strike_started(direction: StrikeDirection)
+## A side strike connected and launched the player away from the surface.
+signal side_bashed
 
 enum State {
 	## Not striking; locomotion is in control.
@@ -173,7 +175,7 @@ func _apply_strike_velocity(input: PlayerInputFrame, delta: float) -> void:
 func _try_slash_connect() -> bool:
 	var disk := slash()
 	var pogo_props := _slash_hits_props(disk, func(prop: TileProp) -> bool: return prop.surface == Room.Kind.POGO)
-	var hits_pogo_tile := _slash_hits_cell(disk, func(cell: Vector2i) -> bool: return body.room.kind_at_cell(cell) == Room.Kind.POGO)
+	var hits_pogo_tile: bool = body.room.tiles_overlap(disk.center, disk.convex_points(), PhysicsLayers.POGO)
 	if hits_pogo_tile or not pogo_props.is_empty():
 		for prop in pogo_props:
 			prop.use_surface(Room.Kind.POGO)
@@ -181,7 +183,8 @@ func _try_slash_connect() -> bool:
 		return true
 	if strike_direction == StrikeDirection.UP:
 		var solid_props := _slash_hits_props(disk, func(prop: TileProp) -> bool: return prop.is_solid())
-		if _slash_hits_cell(disk, body.room.is_solid_cell) or not solid_props.is_empty():
+		var hits_ceiling: bool = body.room.tiles_overlap(disk.center, disk.convex_points(), PhysicsLayers.WORLD) or _slash_hits_out_of_bounds(disk)
+		if hits_ceiling or not solid_props.is_empty():
 			_bonk_ceiling()
 			return true
 	return false
@@ -195,14 +198,15 @@ func _slash_hits_props(disk: HalfDisk, accepts: Callable) -> Array[TileProp]:
 	return hit
 
 
-func _slash_hits_cell(disk: HalfDisk, accepts: Callable) -> bool:
+## Cells outside the room are solid even though no tile shape is there.
+func _slash_hits_out_of_bounds(disk: HalfDisk) -> bool:
 	var bounds := disk.bounds()
 	var first := body.room.cell_at(bounds.position)
 	var last := body.room.cell_at(bounds.end)
 	for y in range(first.y, last.y + 1):
 		for x in range(first.x, last.x + 1):
 			var cell := Vector2i(x, y)
-			if accepts.call(cell) and disk.overlaps_rect(body.room.cell_rect(cell)):
+			if body.room.is_out_of_bounds_solid(cell) and disk.overlaps_rect(body.room.cell_rect(cell)):
 				return true
 	return false
 
@@ -231,6 +235,7 @@ func _side_pop(side: float) -> void:
 	body.velocity.x = -side * side_recoil
 	side_lock_left = side_lock
 	body.request_hitstop(side_hitstop)
+	side_bashed.emit()
 
 
 func _bonk_ceiling() -> void:

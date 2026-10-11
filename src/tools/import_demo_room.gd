@@ -25,19 +25,30 @@ const FLAG_SOFT := 2
 ## The prototype spawn is the top-left of the Standard body (20x28); rooms store feet.
 const PROTOTYPE_BODY_SIZE := Vector2(20, 28)
 
+const PHYSICS_WORLD := 0
+const PHYSICS_HAZARD := 1
+const PHYSICS_EXIT := 2
+const PHYSICS_GRAPPLE := 3
+const PHYSICS_POGO := 4
 ## Atlas column order of the kind tiles. Prototype fill colours; soft tiles are
 ## drawn faint with a dashed rim like the prototype's pass-through surfaces.
-## `physics` is the TileSet physics layer the tile's square is on (-1 for none).
+## `physics` lists the TileSet physics layers that get the tile's square.
 const TILE_STYLES: Array[Dictionary] = [
-	{ "kind": Kind.SOLID, "solid": true, "physics": 0, "color": Color("#3d5a45") },
-	{ "kind": Kind.GRAPPLE, "solid": true, "physics": 0, "color": Color("#c45a1a") },
-	{ "kind": Kind.GRAPPLE, "solid": false, "physics": -1, "color": Color("#c45a1a") },
-	{ "kind": Kind.EXIT, "solid": false, "physics": 2, "color": Color("#1a6b3a") },
-	{ "kind": Kind.DEATH, "solid": false, "physics": 1, "color": Color("#6b1a1a") },
-	{ "kind": Kind.POGO, "solid": false, "physics": -1, "color": Color("#5a2a6b") },
+	{ "kind": Kind.SOLID, "solid": true, "physics": [PHYSICS_WORLD], "color": Color("#3d5a45") },
+	{ "kind": Kind.GRAPPLE, "solid": true, "physics": [PHYSICS_WORLD, PHYSICS_GRAPPLE], "color": Color("#c45a1a") },
+	{ "kind": Kind.GRAPPLE, "solid": false, "physics": [PHYSICS_GRAPPLE], "color": Color("#c45a1a") },
+	{ "kind": Kind.EXIT, "solid": false, "physics": [PHYSICS_EXIT], "color": Color("#1a6b3a") },
+	{ "kind": Kind.DEATH, "solid": false, "physics": [PHYSICS_HAZARD], "color": Color("#6b1a1a") },
+	{ "kind": Kind.POGO, "solid": false, "physics": [PHYSICS_POGO], "color": Color("#5a2a6b") },
 ]
-## Collision layer of each TileSet physics layer, by index.
-const TILE_PHYSICS_LAYERS: Array[int] = [PhysicsLayers.WORLD, PhysicsLayers.HAZARD, PhysicsLayers.EXIT]
+## Collision layer of each TileSet physics layer, by index. Grapple and pogo are sensors.
+const TILE_PHYSICS_LAYERS: Array[int] = [
+	PhysicsLayers.WORLD,
+	PhysicsLayers.HAZARD,
+	PhysicsLayers.EXIT,
+	PhysicsLayers.GRAPPLE,
+	PhysicsLayers.POGO,
+]
 const SOFT_FILL_ALPHA := 0.18
 const SOFT_RIM_ALPHA := 0.85
 
@@ -243,8 +254,7 @@ func _build_tile_set() -> TileSet:
 		source.create_tile(coords)
 		var data := source.get_tile_data(coords, 0)
 		data.set_custom_data(RoomScript.KIND_DATA, style.kind)
-		var physics_layer: int = style.physics
-		if physics_layer >= 0:
+		for physics_layer: int in style.physics:
 			data.add_collision_polygon(physics_layer)
 			data.set_collision_polygon_points(physics_layer, 0, square)
 

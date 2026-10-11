@@ -33,6 +33,15 @@ func overlaps_rect(rect: Rect2) -> bool:
 	return center.distance_squared_to(closest) <= radius * radius
 
 
+## Convex outline around the centre, for a physics shape query.
+func convex_points(segments := 16) -> PackedVector2Array:
+	var start_angle := facing.angle() - PI / 2.0
+	var points := PackedVector2Array()
+	for step in segments + 1:
+		points.append(Vector2.from_angle(start_angle + PI * float(step) / float(segments)) * radius)
+	return points
+
+
 ## World-space bounds of the half circle.
 func bounds() -> Rect2:
 	var full := Rect2(center - Vector2(radius, radius), Vector2(radius, radius) * 2.0)

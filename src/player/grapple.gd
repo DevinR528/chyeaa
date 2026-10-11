@@ -129,14 +129,14 @@ func _update_throw(delta: float, input: PlayerInputFrame) -> void:
 		var next_x := hook.x + direction * step
 		for y in [hook.y, hook.y - latch_slop, hook.y + latch_slop]:
 			var point := Vector2(next_x, y)
-			if body.room.kind_at(point) == Room.Kind.GRAPPLE:
+			if body.room.has_tile(point, PhysicsLayers.GRAPPLE):
 				_latch(point)
 				return
 			var grapple_prop := body.room.prop_at(point, Room.Kind.GRAPPLE)
 			if grapple_prop != null:
 				_latch_prop(grapple_prop, Vector2(next_x, hook.y))
 				return
-			if body.room.is_solid_cell(body.room.cell_at(point)) or body.room.prop_at(point, Room.Kind.SOLID) != null:
+			if body.room.is_solid_at(point) or body.room.prop_at(point, Room.Kind.SOLID) != null:
 				_cancel()
 				return
 		hook.x = next_x
@@ -176,7 +176,7 @@ func _update_attached(delta: float, input: PlayerInputFrame) -> void:
 		latched = attached_prop.is_present()
 		hook = attached_prop.global_position + _hook_offset
 	else:
-		latched = body.room.kind_at(hook) == Room.Kind.GRAPPLE
+		latched = body.room.has_tile(hook, PhysicsLayers.GRAPPLE)
 	if not latched:
 		_release(false)
 		body.move_and_slide()

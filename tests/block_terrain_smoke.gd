@@ -31,7 +31,7 @@ func _run() -> void:
 	await _check_queries_match_physics()
 	await _check_player_lands_on_blocks()
 	await _check_death_blocks_are_a_hazard()
-	_check_demo_block_terrain()
+	await _check_demo_block_terrain()
 	quit(1 if _failed else 0)
 
 
@@ -108,12 +108,12 @@ func _check_demo_block_terrain() -> void:
 	var blocks := room.block_terrain
 	if blocks.tile_set != null:
 		_check_tile_set_conventions(blocks.tile_set)
+		await physics_frame
+		await physics_frame
 		var overlaps: Array[Vector2i] = []
 		for cell in room.terrain.get_used_cells():
-			for physics in blocks.tile_set.get_physics_layers_count():
-				if not room._tiles_at(blocks, cell, physics).is_empty():
-					overlaps.append(cell)
-					break
+			if _collider_at(room, cell, blocks):
+				overlaps.append(cell)
 		_expect(overlaps.is_empty(), "%d demo Terrain cells sit under BlockTerrain collision, first %s" % [overlaps.size(), overlaps.slice(0, 5)])
 	room.free()
 
@@ -150,6 +150,16 @@ func _window(origin: Vector2i) -> Array[Vector2i]:
 		for x in range(origin.x - BLOCK - 1, origin.x + 2 * BLOCK + 1):
 			cells.append(Vector2i(x, y))
 	return cells
+
+
+func _collider_at(room: Room, cell: Vector2i, collider: Node) -> bool:
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = room.cell_rect(cell).get_center()
+	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.HAZARD | PhysicsLayers.EXIT
+	for hit in room.get_world_2d().direct_space_state.intersect_point(query, 8):
+		if hit["collider"] == collider:
+			return true
+	return false
 
 
 func _physics_hit(room: Room, cell: Vector2i, layer: int) -> bool:
