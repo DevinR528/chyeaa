@@ -41,11 +41,12 @@ Typed GDScript only. Scenes and imported assets do not live here.
   `BackdropLayer`s (`Parallax2D`), and the runner frames them to the room so the
   prototype's top and bottom anchors hold. It sits at the lowest z_index, so room
   content with a negative z (the prototype's "behind the tiles" props) still draws
-  in front of it. `CharacterSprite` plays the body's
-  SpriteFrames: the ability's `animation_clip()` (the body's `movement_clip()`
+  in front of it. `CharacterSprite` plays an AnimationLibrary on its Sprite2D:
+  the ability's `animation_clip()` (the body's `movement_clip()`
   while the ability is inactive), else a `fallback` clip, else the placeholder
-  body shows. The body's `move_state` is its one movement state. It emits `frame_event` for authored
-  frame events (footsteps). Audio routing and screen shake are not ported yet.
+  body shows. The body's `move_state` is its one movement state. Generated method
+  keys emit `frame_event`. Pogo reads those footstep marks and the AnimationPlayer
+  clock for its grounded stride. Audio routing and screen shake are not ported yet.
 - `debug/` — game-specific runtime overlays and readouts. `ReachOverlay` draws
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
 - `physics_layers.gd` — named collision layer bits: world, hazard, exit, fall,
@@ -60,6 +61,6 @@ Code that real art or animation will replace is grouped in
   `import_demo_actors.gd` already ran; re-running replaces the demo room's `Actors` node.
   `sync_art.gd` is ongoing: it copies the art Godot uses from the prototype's
   `../assets` (animation, backdrop, and tile sheets) and rebuilds each animation's
-  SpriteFrames. Re-run after exporting art. It stops rather than overwrite a
-  SpriteFrames edited in Godot.
+  AnimationLibrary. Re-run after exporting art; generated tracks are replaced
+  while other tracks survive.
 - `dev/` — temporary probes used while bootstrapping the project.

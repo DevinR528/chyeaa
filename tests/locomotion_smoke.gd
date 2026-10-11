@@ -1,6 +1,8 @@
 extends SceneTree
 
 const FLAT_FLOOR_SCENE := preload("res://tests/flat_floor.tscn")
+const Rooms := preload("res://tests/test_room_builder.gd")
+const POGO_SCENE := preload("res://scenes/player/pogo.tscn")
 
 var _failed := false
 
@@ -10,6 +12,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_check_footstep_stride_curve()
 	var main := FLAT_FLOOR_SCENE.instantiate()
 	root.add_child(main)
 	var player := main.get_node("Player") as PlayerBody
@@ -49,6 +52,7 @@ func _run() -> void:
 
 	main.queue_free()
 	await process_frame
+	await _check_pogo_run_stride()
 	quit(1 if _failed else 0)
 
 
@@ -125,6 +129,60 @@ func _check_jump_cut(player: PlayerBody) -> void:
 		is_equal_approx(player.velocity.y, player.stats.jump_velocity * player.stats.jump_cut),
 		"releasing jump did not apply jump cut",
 	)
+
+
+func _check_footstep_stride_curve() -> void:
+	var marks: Array[float] = [0.0, 0.5]
+	var plant := FootstepStride.phase(0.0, marks, 1.0)
+	var other_plant := FootstepStride.phase(0.5, marks, 1.0)
+	var middle := FootstepStride.phase(0.25, marks, 1.0)
+	_expect(plant.u == 0.0 and is_equal_approx(plant.span, 0.5), "stride did not start on the first plant")
+	_expect(other_plant.u == 0.0, "stride did not restart on the second plant")
+	_expect(is_equal_approx(middle.u, 0.5), "stride phase was not halfway between plants")
+	_expect(FootstepStride.scale(0.0) == 0.8, "stride stall is not 0.8 max run")
+	_expect(FootstepStride.scale(0.12) == 1.2, "stride peak is not 1.2 max run")
+	_expect(FootstepStride.scale(0.95) < FootstepStride.scale(0.12), "stride did not gather before the next plant")
+
+
+func _check_pogo_run_stride() -> void:
+	var room := Rooms.make_room(root, func(_layers: Dictionary) -> void: pass)
+	var player := Rooms.spawn_player(root, room, POGO_SCENE, Vector2(80, Rooms.FLOOR_ROW * Rooms.TILE))
+	player.frozen = true
+	player.move_state = PlayerBody.MovementState.RUN
+	await _next_process()
+	var sprite := player.character_sprite
+	var stride := sprite.run_stride()
+	_expect(stride.times == [0.0, 0.5] and is_equal_approx(stride.loop, 1.0), "pogo did not read run footstep keys and loop length")
+
+	var input_frame := PlayerInputFrame.new()
+	input_frame.move.x = 1.0
+	var delta := 1.0 / 60.0
+	# Begin at the plant's target so this measures a complete steady-state stride.
+	player.velocity.x = player.stats.max_run * FootstepStride.STALL
+	var speeds: Array[float] = []
+	for _frame in 60:
+		player._update_motion(delta, input_frame, true)
+		speeds.append(player.velocity.x)
+		sprite.animation_player.advance(delta)
+	var average: float = speeds.reduce(func(sum: float, speed: float) -> float: return sum + speed, 0.0) / speeds.size()
+	_expect(speeds.min() <= player.stats.max_run * 0.81, "pogo stride never reached its low portion")
+	_expect(speeds.max() >= player.stats.max_run * 1.19, "pogo stride never reached its high portion")
+	_expect(is_equal_approx(average, player.stats.max_run) or absf(average - player.stats.max_run) < player.stats.max_run * 0.02, "complete pogo stride averaged %f instead of max run %f" % [average, player.stats.max_run])
+
+	sprite.animation_player.seek(0.3)
+	player.move_state = PlayerBody.MovementState.JUMP
+	await _next_process()
+	player.move_state = PlayerBody.MovementState.RUN
+	await _next_process()
+	_expect(sprite.animation_player.current_animation_position < 0.1, "leaving grounded run did not reset stride")
+	player.free()
+	room.free()
+	await process_frame
+
+
+func _next_process() -> void:
+	await process_frame
+	await process_frame
 
 
 func _expect(condition: bool, message: String) -> void:

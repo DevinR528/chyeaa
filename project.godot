@@ -26,8 +26,6 @@ window/size/viewport_height=504
 window/size/window_width_override=840
 window/size/window_height_override=504
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
-window/stretch/scale_mode="fractional"
 
 [input]
 

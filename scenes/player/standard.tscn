@@ -26,11 +26,14 @@ position = Vector2(6, -8)
 polygon = PackedVector2Array(-1, -1, 1, -1, 1, 1, -1, 1)
 color = Color(0.101961, 0.133333, 0.188235, 1)
 
-[node name="CharacterSprite" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("placeholder")]
+[node name="CharacterSprite" type="Sprite2D" parent="." node_paths=PackedStringArray("placeholder")]
 centered = false
+region_enabled = true
 script = ExtResource("5_sprite")
 placeholder = NodePath("../PlaceholderBody")
 fallback = Array[StringName]([&"fall", &"jump", &"idle"])
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CharacterSprite"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_body")

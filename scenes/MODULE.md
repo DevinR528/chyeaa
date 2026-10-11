@@ -8,7 +8,7 @@ Standard, Grappler, and Pogo.
 - `player/` — `standard.tscn` is the base character. `grappler.tscn` and
   `pogo.tscn` inherit it and add a body size, surface flags, stat overrides,
   their ability node (assigned to the root's `ability` export), and the
-  `CharacterSprite`'s SpriteFrames (octo for Grappler, old man for Pogo).
+  `CharacterSprite` AnimationLibrary (octo for Grappler, old man for Pogo).
   `PlaceholderBody` (box and eye) shows whenever no clip resolves.
 - `backgrounds/` — backdrop scenes: a `Backdrop` root with one `BackdropLayer`
   per plate, back to front. Plate effects are a `backdrop_plate.gdshader` material.

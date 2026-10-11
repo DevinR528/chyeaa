@@ -3,11 +3,10 @@ extends SceneTree
 ## game still reads ../assets, so this copies only what Godot uses: the sheets
 ## every animation in art/index.json plays, the backdrop layer images, the
 ## shader textures those layers sample, and the tile sheets in tilesets/index.json.
-## Then it rebuilds one SpriteFrames per animation next to its sheets.
+## Then it rebuilds one AnimationLibrary per animation next to its sheets.
 ##
-## Re-run after exporting art from the pixel app. Generated SpriteFrames are
-## rebuilt from the anim documents; a SpriteFrames edited in Godot since the last
-## sync stops the sync instead of being overwritten.
+## Re-run after exporting art from the pixel app. Imported tracks are regenerated
+## from the anim documents; tracks added by hand are left in place.
 ##
 ## Run from lil-guy/:
 ##   godot --headless --path . --script res://src/tools/sync_art.gd
@@ -18,14 +17,11 @@ const BACKGROUNDS_DIR := "backgrounds"
 const SHADERS_DIR := "shaders"
 const TILESETS_INDEX := "tilesets/index.json"
 const DEST_ROOT := "res://assets"
-const SPRITE_FRAMES_SUFFIX := ".sprite_frames.tres"
+const ANIMATION_LIBRARY_SUFFIX := ".animation_library.tres"
 
-## SpriteFrames metadata the sprite node reads.
-const META_ORIGIN := &"origin"
+## AnimationLibrary metadata the sprite node reads.
 const META_SCALE := &"art_scale"
-const META_EVENTS := &"frame_events"
-## What this tool wrote, so a re-sync can tell a hand edit from its own output.
-const META_FINGERPRINT := &"sync_fingerprint"
+const EVENT_METHOD := &"_animation_event"
 
 
 func _initialize() -> void:
@@ -51,7 +47,7 @@ func _sync() -> int:
 		return 1
 
 	for anim: Dictionary in anims:
-		if not _save_sprite_frames(anim):
+		if not _save_animation_library(anim):
 			return 1
 	print("Synced %d files (%d changed) and %d animations." % [copies.size(), changed, anims.size()])
 	return 0
@@ -134,20 +130,27 @@ func _reimport() -> bool:
 	return true
 
 
-## Every clip is drawn on one shared canvas with one origin, so the sprite node
-## keeps a single offset however the clips' frame sizes and pivots differ.
-func _save_sprite_frames(anim: Dictionary) -> bool:
-	var doc: Dictionary = anim.doc
-	var origin := Vector2.ZERO
-	var canvas := Vector2.ZERO
-	for clip: Dictionary in doc.clips.values():
-		origin = origin.max(_clip_origin(doc, clip))
-	for clip: Dictionary in doc.clips.values():
-		canvas = canvas.max(origin - _clip_origin(doc, clip) + _clip_frame_size(doc, clip))
+func _save_animation_library(anim: Dictionary) -> bool:
+	var path := DEST_ROOT.path_join("art").path_join(anim.id).path_join(String(anim.id) + ANIMATION_LIBRARY_SUFFIX)
+	var library: AnimationLibrary
+	if FileAccess.file_exists(path):
+		library = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as AnimationLibrary
+	if library == null:
+		library = AnimationLibrary.new()
+	if not _build_animation_library(anim, library):
+		return false
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
+	var error := ResourceSaver.save(library, path)
+	if error != OK:
+		push_error("Could not save %s: %s" % [path, error_string(error)])
+		return false
+	return true
 
-	var frames := SpriteFrames.new()
-	frames.remove_animation(&"default")
-	var events := {}
+
+## Replaces only the texture/region/pivot and generated event tracks. Other
+## properties and method tracks are authored work and survive every sync.
+static func _build_animation_library(anim: Dictionary, library: AnimationLibrary) -> bool:
+	var doc: Dictionary = anim.doc
 	for clip_name: String in doc.clips:
 		var clip: Dictionary = doc.clips[clip_name]
 		var sheet_path := DEST_ROOT.path_join(_clip_sheet(anim, clip))
@@ -159,84 +162,79 @@ func _save_sprite_frames(anim: Dictionary) -> bool:
 			push_warning("%s.%s: clip shader effects are not translated yet" % [anim.id, clip_name])
 		var frame_size := _clip_frame_size(doc, clip)
 		var columns := int(clip.get("columns", doc.get("columns", floori(sheet.get_width() / frame_size.x))))
-		var margin := Rect2(origin - _clip_origin(doc, clip), canvas - frame_size)
 		var fallback_duration := 1.0 / float(clip.fps)
-		# Speed 1 FPS makes each frame's duration plain seconds, as in the anim document.
-		frames.add_animation(clip_name)
-		frames.set_animation_speed(clip_name, 1.0)
-		frames.set_animation_loop(clip_name, clip.get("loop", true) != false)
-		var clip_events := {}
+		var animation: Animation
+		if library.has_animation(clip_name):
+			animation = library.get_animation(clip_name)
+		if animation == null:
+			animation = Animation.new()
+			library.add_animation(clip_name, animation)
+		for track_index in range(animation.get_track_count() - 1, -1, -1):
+			if _is_generated_track(animation, track_index):
+				animation.remove_track(track_index)
+		animation.loop_mode = Animation.LOOP_LINEAR if clip.get("loop", true) != false else Animation.LOOP_NONE
+		var texture_track := _add_value_track(animation, ^".:texture")
+		var region_track := _add_value_track(animation, ^".:region_rect")
+		var offset_track := _add_value_track(animation, ^".:offset")
+		var event_track := -1
+		var time := 0.0
 		var raw_frames: Array = clip.frames
 		for index in raw_frames.size():
 			var frame: Variant = raw_frames[index]
 			var cell := int(frame) if frame is float else int(frame.cell)
-			var atlas := AtlasTexture.new()
-			atlas.atlas = sheet
-			atlas.region = Rect2(Vector2(cell % columns, cell / columns) * frame_size, frame_size)
-			atlas.margin = margin
+			var region := Rect2(Vector2(cell % columns, cell / columns) * frame_size, frame_size)
 			var duration := fallback_duration if frame is float else float(frame.get("duration", fallback_duration))
-			frames.add_frame(clip_name, atlas, duration)
-			if frame is Dictionary and not (frame.get("events", []) as Array).is_empty():
-				clip_events[index] = PackedStringArray(frame.events)
-		if not clip_events.is_empty():
-			events[clip_name] = clip_events
+			animation.track_insert_key(texture_track, time, sheet)
+			animation.track_insert_key(region_track, time, region)
+			animation.track_insert_key(offset_track, time, -_clip_origin(doc, clip))
+			if frame is Dictionary:
+				for event_name: String in frame.get("events", []):
+					if event_track < 0:
+						event_track = animation.add_track(Animation.TYPE_METHOD)
+						animation.track_set_path(event_track, ^".")
+					animation.track_insert_key(event_track, time, {
+						"method": EVENT_METHOD,
+						"args": [StringName(event_name), StringName(clip_name), index],
+					})
+			time += duration
+		animation.length = time
 
-	frames.set_meta(META_ORIGIN, origin)
-	frames.set_meta(META_SCALE, float(doc.get("scale", 1.0)))
-	frames.set_meta(META_EVENTS, events)
-	frames.set_meta(META_FINGERPRINT, _fingerprint(frames))
-	var path := DEST_ROOT.path_join("art").path_join(anim.id).path_join(String(anim.id) + SPRITE_FRAMES_SUFFIX)
-	if _edited_since_sync(path):
-		push_error("%s was edited in Godot since the last sync. Move the change into %s (or the pixel app), or delete the .tres, then sync again." % [path, anim.json])
-		return false
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
-	var error := ResourceSaver.save(frames, path)
-	if error != OK:
-		push_error("Could not save %s: %s" % [path, error_string(error)])
-		return false
+	library.set_meta(META_SCALE, float(doc.get("scale", 1.0)))
 	return true
 
 
-## True when the saved SpriteFrames no longer matches what the last sync wrote.
-## Files from before the fingerprint existed are treated as unedited.
-func _edited_since_sync(path: String) -> bool:
-	if not FileAccess.file_exists(path):
+static func _add_value_track(animation: Animation, property: NodePath) -> int:
+	var track := animation.add_track(Animation.TYPE_VALUE)
+	animation.track_set_path(track, property)
+	animation.value_track_set_update_mode(track, Animation.UPDATE_DISCRETE)
+	return track
+
+
+static func _is_generated_track(animation: Animation, track: int) -> bool:
+	if animation.track_is_imported(track):
+		return true
+	var path := animation.track_get_path(track)
+	if animation.track_get_type(track) == Animation.TYPE_VALUE:
+		return path in [^".:texture", ^".:region_rect", ^".:offset"]
+	if animation.track_get_type(track) != Animation.TYPE_METHOD or animation.track_get_key_count(track) == 0:
 		return false
-	var saved := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as SpriteFrames
-	if saved == null or not saved.has_meta(META_FINGERPRINT):
-		return false
-	return saved.get_meta(META_FINGERPRINT) != _fingerprint(saved)
+	for key in animation.track_get_key_count(track):
+		var call: Dictionary = animation.track_get_key_value(track, key)
+		if call.get("method") != EVENT_METHOD:
+			return false
+	return true
 
 
-## Hash of everything a sync writes that the SpriteFrames editor can change.
-func _fingerprint(frames: SpriteFrames) -> int:
-	var parts := []
-	var names := frames.get_animation_names()
-	names.sort()
-	for clip_name in names:
-		parts.append([clip_name, frames.get_animation_loop(clip_name), frames.get_animation_speed(clip_name)])
-		for index in frames.get_frame_count(clip_name):
-			var texture := frames.get_frame_texture(clip_name, index)
-			var atlas := texture as AtlasTexture
-			parts.append([
-				frames.get_frame_duration(clip_name, index),
-				atlas.atlas.resource_path if atlas != null and atlas.atlas != null else texture.resource_path if texture != null else "",
-				atlas.region if atlas != null else Rect2(),
-				atlas.margin if atlas != null else Rect2(),
-			])
-	return var_to_str(parts).hash()
-
-
-func _clip_sheet(anim: Dictionary, clip: Dictionary) -> String:
+static func _clip_sheet(anim: Dictionary, clip: Dictionary) -> String:
 	return _resolve(String(clip.get("sheet", anim.doc.sheet)), anim.json)
 
 
-func _clip_frame_size(doc: Dictionary, clip: Dictionary) -> Vector2:
+static func _clip_frame_size(doc: Dictionary, clip: Dictionary) -> Vector2:
 	return Vector2(clip.get("frame_w", doc.frame_w), clip.get("frame_h", doc.frame_h)).floor()
 
 
 ## A clip's own pivot, else the set's, else the frame's bottom centre.
-func _clip_origin(doc: Dictionary, clip: Dictionary) -> Vector2:
+static func _clip_origin(doc: Dictionary, clip: Dictionary) -> Vector2:
 	var size := _clip_frame_size(doc, clip)
 	return Vector2(
 		clip.get("origin_x", doc.get("origin_x", size.x / 2.0)),
@@ -246,7 +244,7 @@ func _clip_origin(doc: Dictionary, clip: Dictionary) -> Vector2:
 
 ## Prototype URLs: `/x` is under SOURCE_ROOT (Vite's public dir); anything else is
 ## relative to the document at `from`.
-func _resolve(url: String, from: String) -> String:
+static func _resolve(url: String, from: String) -> String:
 	if url.begins_with("/"):
 		return url.trim_prefix("/")
 	return from.get_base_dir().path_join(url)

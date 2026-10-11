@@ -1,5 +1,5 @@
 extends SceneTree
-## Art translation and presentation: synced SpriteFrames match their anim
+## Art translation and presentation: synced AnimationLibraries match their anim
 ## documents, character sprites pick clips like the prototype's bind files, and
 ## backdrop layers land where the prototype's placement put them.
 
@@ -22,7 +22,8 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_check_sprite_frames_match_documents()
+	_check_animation_libraries_match_documents()
+	_check_authored_track_survives_sync()
 	await _check_pogo_sprite()
 	await _check_grappler_and_standard_sprites()
 	_check_backdrop_placement()
@@ -30,40 +31,82 @@ func _run() -> void:
 	quit(1 if _failed else 0)
 
 
-func _check_sprite_frames_match_documents() -> void:
+func _check_animation_libraries_match_documents() -> void:
 	var source := ProjectSettings.globalize_path("res://").path_join(SYNC_ART.SOURCE_ROOT)
 	var index: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(source.path_join(SYNC_ART.ART_INDEX)))
 	for entry: Dictionary in index.anims:
 		var doc: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(source.path_join("art").path_join(entry.path)))
-		var path := "res://assets/art/%s/%s%s" % [entry.id, entry.id, SYNC_ART.SPRITE_FRAMES_SUFFIX]
-		var frames := load(path) as SpriteFrames
-		if frames == null:
+		var path := "res://assets/art/%s/%s%s" % [entry.id, entry.id, SYNC_ART.ANIMATION_LIBRARY_SUFFIX]
+		var library := load(path) as AnimationLibrary
+		if library == null:
 			_expect(false, "%s was not generated; run src/tools/sync_art.gd" % path)
 			continue
-		var origin: Vector2 = frames.get_meta(SYNC_ART.META_ORIGIN)
 		for clip_name: String in doc.clips:
 			var clip: Dictionary = doc.clips[clip_name]
 			var label := "%s.%s" % [entry.id, clip_name]
-			if not frames.has_animation(clip_name):
+			if not library.has_animation(clip_name):
 				_expect(false, "%s is missing" % label)
 				continue
-			_expect(frames.get_frame_count(clip_name) == clip.frames.size(), "%s has the wrong frame count" % label)
-			_expect(frames.get_animation_loop(clip_name) == clip.get("loop", true), "%s loop does not match" % label)
+			var animation := library.get_animation(clip_name)
+			var texture_track := _find_track(animation, ^".:texture", Animation.TYPE_VALUE)
+			var region_track := _find_track(animation, ^".:region_rect", Animation.TYPE_VALUE)
+			var offset_track := _find_track(animation, ^".:offset", Animation.TYPE_VALUE)
+			var event_track := _find_track(animation, ^".", Animation.TYPE_METHOD)
+			_expect(texture_track >= 0 and region_track >= 0 and offset_track >= 0, "%s is missing generated visual tracks" % label)
+			if texture_track < 0 or region_track < 0 or offset_track < 0:
+				continue
+			_expect(animation.track_get_key_count(texture_track) == clip.frames.size(), "%s has the wrong frame count" % label)
+			var loops := animation.loop_mode == Animation.LOOP_LINEAR
+			_expect(loops == clip.get("loop", true), "%s loop does not match" % label)
 			var clip_origin := Vector2(
 				clip.get("origin_x", doc.get("origin_x", clip.get("frame_w", doc.frame_w) / 2.0)),
 				clip.get("origin_y", doc.get("origin_y", clip.get("frame_h", doc.frame_h))),
 			)
+			var frame_size := Vector2(clip.get("frame_w", doc.frame_w), clip.get("frame_h", doc.frame_h))
+			var columns := int(clip.get("columns", doc.get("columns", 1)))
+			var expected_time := 0.0
 			for frame_index in clip.frames.size():
 				var frame: Dictionary = clip.frames[frame_index]
-				var atlas := frames.get_frame_texture(clip_name, frame_index) as AtlasTexture
+				var cell := int(frame.cell)
 				_expect(
-					is_equal_approx(frames.get_frame_duration(clip_name, frame_index) / frames.get_animation_speed(clip_name), frame.duration),
-					"%s frame %d duration differs from the document" % [label, frame_index],
+					is_equal_approx(animation.track_get_key_time(texture_track, frame_index), expected_time),
+					"%s frame %d starts at the wrong time" % [label, frame_index],
 				)
 				_expect(
-					(atlas.margin.position + clip_origin).is_equal_approx(origin),
-					"%s frame %d pivot does not land on the shared origin" % [label, frame_index],
+					animation.track_get_key_value(offset_track, frame_index) == -clip_origin,
+					"%s frame %d has the wrong pivot" % [label, frame_index],
 				)
+				_expect(
+					animation.track_get_key_value(region_track, frame_index) == Rect2(Vector2(cell % columns, cell / columns) * frame_size, frame_size),
+					"%s frame %d has the wrong region" % [label, frame_index],
+				)
+				expected_time += float(frame.duration)
+			_expect(is_equal_approx(animation.length, expected_time), "%s has the wrong loop length" % label)
+			var expects_events := (clip.frames as Array).any(func(frame: Dictionary) -> bool: return not (frame.get("events", []) as Array).is_empty())
+			_expect((event_track >= 0) == expects_events, "%s generated event track does not match its document" % label)
+
+
+func _check_authored_track_survives_sync() -> void:
+	var source := ProjectSettings.globalize_path("res://").path_join(SYNC_ART.SOURCE_ROOT)
+	var doc: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(source.path_join("art/old_man/old_man.anim.json")))
+	var anim := {id = "old_man", doc = doc, json = "art/old_man/old_man.anim.json"}
+	var saved := load("res://assets/art/old_man/old_man.animation_library.tres") as AnimationLibrary
+	var library := saved.duplicate(true) as AnimationLibrary
+	var idle := library.get_animation(&"idle")
+	var authored_track := idle.add_track(Animation.TYPE_VALUE)
+	idle.track_set_path(authored_track, ^".:modulate")
+	idle.track_insert_key(authored_track, 0.0, Color.RED)
+	_expect(SYNC_ART._build_animation_library(anim, library), "sync could not rebuild a library with an authored track")
+	idle = library.get_animation(&"idle")
+	var preserved := _find_track(idle, ^".:modulate", Animation.TYPE_VALUE)
+	_expect(preserved >= 0 and not idle.track_is_imported(preserved), "sync deleted the hand-authored track")
+
+
+func _find_track(animation: Animation, path: NodePath, type: Animation.TrackType) -> int:
+	for track_index in animation.get_track_count():
+		if animation.track_get_path(track_index) == path and animation.track_get_type(track_index) == type:
+			return track_index
+	return -1
 
 
 func _check_pogo_sprite() -> void:
@@ -81,15 +124,17 @@ func _check_pogo_sprite() -> void:
 	_expect(sprite.clip == &"idle" and sprite.visible and not placeholder.visible, "pogo standing still did not play idle over the placeholder")
 	var feet := player.body_rect().end - Vector2(player.body_rect().size.x / 2.0, 0.0)
 	_expect(sprite.global_position.is_equal_approx(feet), "sprite pivot %s is not the body's bottom-centre %s" % [sprite.global_position, feet])
-	_expect(sprite.offset == -sprite.sprite_frames.get_meta(SYNC_ART.META_ORIGIN), "sprite offset does not put the art origin on the pivot")
+	_expect(sprite.offset == Vector2(-28, -79), "idle animation did not key its clip pivot: %s (root %s, active %s)" % [sprite.offset, sprite.animation_player.root_node, sprite.animation_player.is_playing()])
 
 	player.facing = -1.0
 	player.move_state = PlayerBody.MovementState.RUN
 	await _next_frame()
 	_expect(sprite.clip == &"run" and sprite.scale.x < 0.0, "running left did not play a flipped run")
 	_expect(events == [&"footstep_right"], "entering run did not fire its first frame's footstep: %s" % [events])
-	sprite.frame = 4
-	_expect(events.back() == &"footstep_left", "run frame 4 did not fire footstep_left")
+	sprite.animation_player.seek(0.49)
+	sprite.animation_player.advance(0.02)
+	await process_frame
+	_expect(events.back() == &"footstep_left", "run frame 4 did not fire footstep_left: %s at %.3f" % [events, sprite.animation_player.current_animation_position])
 
 	player.move_state = PlayerBody.MovementState.JUMP
 	await _next_frame()

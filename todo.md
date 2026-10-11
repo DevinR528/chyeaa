@@ -8,7 +8,7 @@ the final retirement checklist.
 
 Next safe parallel wave:
 
-- [ ] AnimationPlayer plus Pogo stride (Task 1).
+- [x] AnimationPlayer plus Pogo stride (Task 1).
 - [ ] Switch/gate/power, fall block, and track audit (Task 3).
 - [ ] Pure run-build and stat stacking model (Task 6A).
 
@@ -47,24 +47,22 @@ tick (about 0.5 ms). Fine today; do this if profiling says otherwise.
 
 ## Move character sprites to Sprite2D + AnimationPlayer
 
-Do this with footstep sounds, the first thing that needs more than a flipbook.
-`CharacterSprite` is an `AnimatedSprite2D` today, and frame events ride along as
-SpriteFrames metadata (`frame_events`) re-emitted as its `frame_event` signal.
+`CharacterSprite` now uses `Sprite2D` plus `AnimationPlayer`. Generated method
+keys are re-emitted through `frame_event`; audio remains Task 2.
 
 An `AnimationPlayer` can key other properties on the same timeline: audio and
 method-call tracks for footsteps, plus effects, squash and stretch, or offsets.
 Each clip keys `texture`, `region_rect`, and `offset`, so clips with different
 sheets need no shared canvas (the AtlasTexture margins in `sync_art.gd` go away).
 
-- [ ] `sync_art.gd` writes an `AnimationLibrary` per anim document instead of SpriteFrames.
-- [ ] Re-syncing must replace only the tracks the tool generated (sprite
-  `texture`, `region_rect`, `offset`, `frame`) and keep tracks added in Godot.
-  This merge is the risky part; test that a hand-added track survives a re-sync.
-- [ ] Turn anim-document `events` into method-call or audio keys, and drop the
-  `frame_events` metadata and the `frame_event` signal.
-- [ ] `CharacterSprite` keeps choosing clips the same way (the ability's clip,
+- [x] `sync_art.gd` writes an `AnimationLibrary` per anim document instead of SpriteFrames.
+- [x] Re-syncing replaces only generated `texture`, `region_rect`, `offset`, and
+  animation-event method tracks and keeps tracks added in Godot.
+- [x] Anim-document `events` become method-call keys that retain the presentation
+  event boundary.
+- [x] `CharacterSprite` keeps choosing clips the same way (the ability's clip,
   then the body's movement clip, then `fallback`, else the placeholder) and plays them on the player.
-- [ ] Update `art_smoke.gd`: the clip, pivot, flip, and placeholder checks carry
+- [x] Update `art_smoke.gd`: the clip, pivot, flip, and placeholder checks carry
   over; the frame-event checks move to the new tracks.
 
 Not needed for this: `AnimationTree`. Clip choice is simple and driven by code,

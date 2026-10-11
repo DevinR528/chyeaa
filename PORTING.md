@@ -66,7 +66,7 @@ was developed in parallel.
 
 ## 1. AnimationPlayer and Pogo stride
 
-Status: ready. This task owns the animation representation and stride together
+Status: complete. This task owns the animation representation and stride together
 so stride is not implemented against SpriteFrames and immediately rewritten.
 
 Prototype sources:
