@@ -227,6 +227,7 @@ func _draw() -> void:
 		var armed_for := breakable.delay - breakable.time_left
 		box.position.x += sin(armed_for * ARMING_SHAKE_RATE) * ARMING_SHAKE_PX
 		color.a *= ARMING_ALPHA
+		
 	if is_solid():
 		draw_rect(box, color)
 	else:

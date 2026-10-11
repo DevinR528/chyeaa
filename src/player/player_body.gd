@@ -16,9 +16,22 @@ signal hurt(source: RoomActor)
 ## Bounced off the top of a walker or moving throwable.
 signal stomped(target: RoomActor)
 
-enum MotionState {
-	NORMAL,
-	DASHING,
+## DASH is entered by the dash input and left when its timer runs out. The rest are
+## read from the floor contact and velocity at the end of every tick.
+enum MovementState {
+	IDLE,
+	RUN,
+	JUMP,
+	FALL,
+	DASH,
+}
+
+const MOVEMENT_CLIPS: Dictionary[MovementState, StringName] = {
+	MovementState.IDLE: &"idle",
+	MovementState.RUN: &"run",
+	MovementState.JUMP: &"jump",
+	MovementState.FALL: &"fall",
+	MovementState.DASH: &"dash",
 }
 
 const TRIGGER_LAYERS := PhysicsLayers.HAZARD | PhysicsLayers.EXIT | PhysicsLayers.FALL
@@ -45,8 +58,7 @@ var room: Room
 var frozen := false
 
 var facing := 1.0
-var motion := MotionState.NORMAL
-var pose: StringName = &"fall"
+var move_state := MovementState.FALL
 
 var coyote_time_left := 0.0
 var jump_buffer_left := 0.0
@@ -126,7 +138,7 @@ func respawn(feet: Vector2) -> void:
 	velocity = Vector2.ZERO
 	frozen = false
 	facing = 1.0
-	motion = MotionState.NORMAL
+	move_state = MovementState.FALL
 	coyote_time_left = 0.0
 	jump_buffer_left = 0.0
 	air_jumps_left = stats.air_jumps
@@ -137,7 +149,6 @@ func respawn(feet: Vector2) -> void:
 	dash_velocity_x = 0.0
 	was_airborne = false
 	fall_duration = 0.0
-	pose = &"fall"
 	previous_feet_y = feet.y
 	_stomp_target = null
 	player_input.clear_edges()
@@ -253,16 +264,16 @@ func _tick_timers(delta: float, input_frame: PlayerInputFrame, was_on_floor: boo
 	if dash_time_left > 0.0:
 		dash_time_left = maxf(0.0, dash_time_left - delta)
 		if is_zero_approx(dash_time_left):
-			motion = MotionState.NORMAL
+			move_state = _read_move_state()
 
 
 func _try_dash(input_frame: PlayerInputFrame) -> void:
-	if motion == MotionState.DASHING or dash_cooldown_left > 0.0 or not input_frame.dash_pressed:
+	if move_state == MovementState.DASH or dash_cooldown_left > 0.0 or not input_frame.dash_pressed:
 		return
 
 	var direction := signf(input_frame.move.x) if not is_zero_approx(input_frame.move.x) else facing
 	facing = direction
-	motion = MotionState.DASHING
+	move_state = MovementState.DASH
 	dash_time_left = stats.dash_duration
 	dash_cooldown_left = stats.dash_cooldown
 	dash_velocity_x = velocity.x * stats.dash_air_momentum + direction * stats.dash_speed
@@ -275,7 +286,7 @@ func _update_motion(
 	input_frame: PlayerInputFrame,
 	was_on_floor: bool,
 ) -> void:
-	if motion == MotionState.DASHING:
+	if move_state == MovementState.DASH:
 		velocity = Vector2(dash_velocity_x, 0.0)
 		jump_held_previous = input_frame.jump_held
 		return
@@ -323,7 +334,8 @@ func _jump_velocity() -> float:
 func _finish_tick(was_on_floor: bool, input_frame: PlayerInputFrame) -> void:
 	_update_contacts(was_on_floor)
 	carrier.update(input_frame)
-	pose = _derive_pose()
+	if move_state != MovementState.DASH:
+		move_state = _read_move_state()
 
 
 func _update_contacts(was_on_floor: bool) -> void:
@@ -351,17 +363,21 @@ func _notify_stood_on() -> void:
 			prop.stood_on()
 
 
-func _derive_pose() -> StringName:
-	if motion == MotionState.DASHING:
-		return &"dash"
+## The clip for `move_state`. An active ability may play another (see `PlayerAbility.animation_clip`).
+func movement_clip() -> StringName:
+	return MOVEMENT_CLIPS[move_state]
+
+
+## Every state except DASH, read from the last move's floor contact and velocity.
+func _read_move_state() -> MovementState:
 	if not is_on_floor():
-		return &"jump" if velocity.y < 0.0 else &"fall"
-	return &"idle" if is_zero_approx(velocity.x) else &"run"
+		return MovementState.JUMP if velocity.y < 0.0 else MovementState.FALL
+	return MovementState.IDLE if is_zero_approx(velocity.x) else MovementState.RUN
 
 
 #region Placeholder visuals
-# `PlaceholderBody` (a box with an eye) stands in until character sprites land.
-# Delete this region with that node; the sprite's animation flips from `facing`.
+# `PlaceholderBody` (a box with an eye) shows while `CharacterSprite` has no clip
+# for the current state. Delete this region with that node once every clip exists.
 
 @onready var _placeholder_body: Node2D = get_node_or_null(^"PlaceholderBody")
 

@@ -4,7 +4,8 @@ extends PlayerAbility
 ## https://github.com/EXOK/Celeste2/blob/main/player.lua
 
 enum State {
-	NORMAL,
+	## Not grappling (also during the cooldown); locomotion is in control.
+	INACTIVE,
 	THROW,
 	ATTACHED,
 	RETRACT,
@@ -40,7 +41,7 @@ const HEIGHT_CORRECT_MAX_SPEED := 20.0
 @export var release_speed_cap := 95.0 * TILE
 @export var retract_speed := Vector2(175.0, 100.0) * TILE
 
-var state := State.NORMAL
+var state := State.INACTIVE
 ## World-space hook position.
 var hook := Vector2.ZERO
 var direction := 1.0
@@ -53,7 +54,7 @@ var _hook_offset := Vector2.ZERO
 
 
 func reset() -> void:
-	state = State.NORMAL
+	state = State.INACTIVE
 	attached_prop = null
 	cooldown_left = 0.0
 	jump_grace_left = 0.0
@@ -63,9 +64,13 @@ func reach() -> float:
 	return reach_tiles * TILE
 
 
+func animation_clip(movement_clip: StringName) -> StringName:
+	return movement_clip if state == State.INACTIVE else &"grapple"
+
+
 func tick(delta: float) -> void:
 	jump_grace_left = maxf(0.0, jump_grace_left - delta)
-	if cooldown_left > 0.0 and state == State.NORMAL:
+	if cooldown_left > 0.0 and state == State.INACTIVE:
 		cooldown_left = maxf(0.0, cooldown_left - delta)
 
 	if state == State.RETRACT:
@@ -73,7 +78,7 @@ func tick(delta: float) -> void:
 		hook.x = move_toward(hook.x, rope_start.x, retract_speed.x * delta)
 		hook.y = move_toward(hook.y, rope_start.y, retract_speed.y * delta)
 		if absf(hook.x - rope_start.x) < RETRACT_SNAP and absf(hook.y - rope_start.y) < RETRACT_SNAP:
-			state = State.NORMAL
+			state = State.INACTIVE
 
 
 func update_active(delta: float, input: PlayerInputFrame) -> bool:
@@ -90,7 +95,7 @@ func update_active(delta: float, input: PlayerInputFrame) -> bool:
 
 
 func try_start(input: PlayerInputFrame) -> bool:
-	if not input.action_pressed or cooldown_left > 0.0 or state != State.NORMAL:
+	if not input.action_pressed or cooldown_left > 0.0 or state != State.INACTIVE:
 		return false
 	state = State.THROW
 	body.velocity = Vector2.ZERO
@@ -254,7 +259,7 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if state == State.NORMAL:
+	if state == State.INACTIVE:
 		return
 	var from := to_local(chest())
 	var to := to_local(hook)

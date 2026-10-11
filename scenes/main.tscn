@@ -1,36 +1,42 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cjc4omie3mmqq"]
 
-[ext_resource type="Script" path="res://src/rooms/room_runner.gd" id="1_runner"]
-[ext_resource type="PackedScene" path="res://scenes/rooms/demo.tscn" id="2_demo"]
+[ext_resource type="Script" uid="uid://cx0hbwysijg13" path="res://src/rooms/room_runner.gd" id="1_runner"]
+[ext_resource type="PackedScene" uid="uid://dbrx5fgfql16x" path="res://scenes/rooms/demo.tscn" id="2_demo"]
 [ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="3_standard"]
-[ext_resource type="Script" path="res://src/presentation/follow_camera.gd" id="4_camera"]
+[ext_resource type="Script" uid="uid://xb0lnlk68m4n" path="res://src/presentation/follow_camera.gd" id="4_camera"]
 [ext_resource type="PackedScene" path="res://scenes/player/grappler.tscn" id="5_grappler"]
-[ext_resource type="PackedScene" path="res://scenes/player/pogo.tscn" id="6_pogo"]
-[ext_resource type="Script" path="res://src/debug/reach_overlay.gd" id="7_reach"]
+[ext_resource type="PackedScene" uid="uid://blcyetwciet0t" path="res://scenes/player/pogo.tscn" id="6_pogo"]
+[ext_resource type="Script" uid="uid://pr8vmchbv4e1" path="res://src/debug/reach_overlay.gd" id="7_reach"]
+[ext_resource type="PackedScene" uid="uid://cbfqdxl45bu0a" path="res://scenes/backgrounds/eroded_earth.tscn" id="8_backdrop"]
 
-[node name="Main" type="Node2D" node_paths=PackedStringArray("room", "camera")]
+[node name="Main" type="Node2D" unique_id=36488909 node_paths=PackedStringArray("room", "camera", "backdrop")]
 process_physics_priority = -10
 script = ExtResource("1_runner")
 room = NodePath("Demo")
 camera = NodePath("Camera")
+backdrop = NodePath("Backdrop")
 characters = Array[PackedScene]([ExtResource("3_standard"), ExtResource("5_grappler"), ExtResource("6_pogo")])
 
-[node name="Demo" parent="." instance=ExtResource("2_demo")]
+[node name="Backdrop" parent="." unique_id=1366536037 instance=ExtResource("8_backdrop")]
 
-[node name="Camera" type="Camera2D" parent="."]
-process_callback = 0
+[node name="Demo" parent="." unique_id=1762063586 instance=ExtResource("2_demo")]
+
+[node name="Camera" type="Camera2D" parent="." unique_id=860998221]
 process_physics_priority = 30
+process_callback = 0
 position_smoothing_enabled = true
 position_smoothing_speed = 7.0
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 drag_left_margin = 0.16
-drag_top_margin = 0.1
+drag_top_margin = 0.16
 drag_right_margin = 0.16
-drag_bottom_margin = 0.1
+drag_bottom_margin = 0.16
+editor_draw_limits = true
+editor_draw_drag_margin = true
 script = ExtResource("4_camera")
 
-[node name="ReachOverlay" type="Node2D" parent="." node_paths=PackedStringArray("runner")]
+[node name="ReachOverlay" type="Node2D" parent="." unique_id=559674077 node_paths=PackedStringArray("runner")]
 process_physics_priority = 25
 script = ExtResource("7_reach")
 runner = NodePath("..")

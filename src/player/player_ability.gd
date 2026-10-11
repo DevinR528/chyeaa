@@ -42,3 +42,10 @@ func on_jump_consumed() -> void:
 ## True while held horizontal input must not steer locomotion.
 func locks_horizontal_input() -> bool:
 	return false
+
+
+## The clip the character sprite should play. `movement_clip` is the body's clip for
+## its movement state (idle, run, jump, fall, dash); return it unchanged while the
+## ability is inactive.
+func animation_clip(movement_clip: StringName) -> StringName:
+	return movement_clip

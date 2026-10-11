@@ -38,7 +38,10 @@ func _run() -> void:
 	await _physics_frames(2)
 	Input.action_release(&"dash")
 	_expect(player.dash_time_left > 0.0, "dash input did not start a dash")
+	_expect(player.move_state == PlayerBody.MovementState.DASH and player.movement_clip() == &"dash", "dashing is not in the DASH state")
 	_expect(absf(player.velocity.x) > player.stats.max_run, "dash was not faster than run speed")
+	await _physics_frames(ceili(player.stats.dash_duration * Engine.physics_ticks_per_second) + 1)
+	_expect(player.move_state != PlayerBody.MovementState.DASH, "DASH outlasted the dash timer")
 
 	_check_coyote_time(player)
 	_check_jump_buffer(player)
@@ -76,7 +79,7 @@ func _check_input_latching(input_source: PlayerInput) -> void:
 
 
 func _check_coyote_time(player: PlayerBody) -> void:
-	player.motion = PlayerBody.MotionState.NORMAL
+	player.move_state = PlayerBody.MovementState.FALL
 	player.velocity = Vector2.ZERO
 	player.coyote_time_left = player.stats.coyote_time
 
@@ -90,7 +93,7 @@ func _check_coyote_time(player: PlayerBody) -> void:
 
 
 func _check_jump_buffer(player: PlayerBody) -> void:
-	player.motion = PlayerBody.MotionState.NORMAL
+	player.move_state = PlayerBody.MovementState.FALL
 	player.velocity = Vector2.ZERO
 	player.coyote_time_left = 0.0
 	player.jump_buffer_left = 0.0
@@ -110,7 +113,7 @@ func _check_jump_buffer(player: PlayerBody) -> void:
 
 
 func _check_jump_cut(player: PlayerBody) -> void:
-	player.motion = PlayerBody.MotionState.NORMAL
+	player.move_state = PlayerBody.MovementState.FALL
 	player.velocity = Vector2(0.0, player.stats.jump_velocity)
 	player.jump_cuttable = true
 	player.jump_held_previous = true

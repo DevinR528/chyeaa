@@ -6,7 +6,8 @@ extends PlayerAbility
 signal strike_started(direction: StrikeDirection)
 
 enum State {
-	NORMAL,
+	## Not striking; locomotion is in control.
+	INACTIVE,
 	STRIKE,
 }
 
@@ -50,7 +51,7 @@ const TILE := MovementStats.TILE
 @export_range(0.0, 0.5, 0.005) var side_lock := 0.08
 @export_range(0.0, 0.3, 0.005) var side_hitstop := 0.1
 
-var state := State.NORMAL
+var state := State.INACTIVE
 var strike_direction := StrikeDirection.DOWN
 var strike_left := 0.0
 var side_lock_left := 0.0
@@ -59,17 +60,28 @@ var strike_buffer_left := 0.0
 
 
 func reset() -> void:
-	state = State.NORMAL
+	state = State.INACTIVE
 	strike_left = 0.0
 	side_lock_left = 0.0
 	strike_buffer_left = 0.0
+
+
+func animation_clip(movement_clip: StringName) -> StringName:
+	if state != State.STRIKE:
+		return movement_clip
+	match strike_direction:
+		StrikeDirection.DOWN:
+			return &"strike_down"
+		StrikeDirection.UP:
+			return &"strike_up"
+	return &"strike_side"
 
 
 func tick(delta: float) -> void:
 	if state == State.STRIKE:
 		strike_left = maxf(0.0, strike_left - delta)
 	side_lock_left = maxf(0.0, side_lock_left - delta)
-	if strike_buffer_left > 0.0 and body.motion != PlayerBody.MotionState.DASHING:
+	if strike_buffer_left > 0.0 and body.move_state != PlayerBody.MovementState.DASH:
 		strike_buffer_left = maxf(0.0, strike_buffer_left - delta)
 
 
@@ -82,15 +94,15 @@ func update_active(delta: float, input: PlayerInputFrame) -> bool:
 		return true
 	body.move_and_slide()
 	if not _try_slash_connect() and strike_left <= 0.0:
-		state = State.NORMAL
+		state = State.INACTIVE
 	return true
 
 
 ## The strike aims from the stick when it comes out, not when the button went down.
 func try_start(input: PlayerInputFrame) -> bool:
-	if state != State.NORMAL:
+	if state != State.INACTIVE:
 		return false
-	var dashing := body.motion == PlayerBody.MotionState.DASHING
+	var dashing := body.move_state == PlayerBody.MovementState.DASH
 	if input.action_pressed and dashing:
 		strike_buffer_left = strike_buffer
 	var wants_strike := input.action_pressed or strike_buffer_left > 0.0
@@ -196,7 +208,7 @@ func _slash_hits_cell(disk: HalfDisk, accepts: Callable) -> bool:
 
 
 func _on_pogo_connect() -> void:
-	state = State.NORMAL
+	state = State.INACTIVE
 	strike_left = 0.0
 	body.refresh_dash()
 	body.air_jumps_left = body.stats.air_jumps
@@ -222,7 +234,7 @@ func _side_pop(side: float) -> void:
 
 
 func _bonk_ceiling() -> void:
-	state = State.NORMAL
+	state = State.INACTIVE
 	strike_left = 0.0
 	body.velocity.y = 0.0
 	body.jump_buffer_left = 0.0

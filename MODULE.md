@@ -11,6 +11,8 @@ Godot 4.7 project for the platformer.
 - `tests/` — headless GDScript tests and test scenes.
 - `project.godot` — project-wide display, physics, input, and rendering settings.
 - `todo.md` — follow-ups for the Godot project.
+- `PORTING.md` — agent-sized remaining port tasks, dependencies, and acceptance
+  criteria.
 
 Use lowercase snake_case paths. Godot resource paths are case-sensitive on
 case-sensitive export targets even when authored on Windows.

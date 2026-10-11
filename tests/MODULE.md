@@ -19,6 +19,15 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 - `actors_smoke.gd` — walker turns at walls and ledges, stomp and side hurt,
   pickup and throw, ball bounces off the floor, walkers it kills, and other
   balls, standing on an idle ball, and a thrower's immunity to their own ball.
+- `art_smoke.gd` — synced SpriteFrames match their anim documents (frames,
+  durations, shared pivot), character sprites pick clips, flip, show the
+  placeholder, and fire frame events, and backdrop layers land where the
+  prototype's placement put them and follow the camera. Run `sync_art.gd` first.
+- `block_terrain_smoke.gd` — 32 px art tiles on 8 px cells (also flipped and
+  transposed) answer the room's cell queries wherever physics says they collide,
+  hold the player up, and death blocks are a hazard. Every tile in the demo's
+  hand-made TileSet has collision matching its kind, and
+  none overlaps Terrain.
 - `test_room_builder.gd` — preloaded helper that builds rooms, props, actors, and
   players in code.
 

@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/player/player_body.gd" id="1_player"]
 [ext_resource type="Resource" path="res://resources/player/base_movement_stats.tres" id="2_stats"]
 [ext_resource type="Script" path="res://src/input/player_input.gd" id="3_input"]
 [ext_resource type="Script" path="res://src/player/carrier.gd" id="4_carrier"]
+[ext_resource type="Script" path="res://src/presentation/character_sprite.gd" id="5_sprite"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(20, 28)
@@ -24,6 +25,12 @@ color = Color(0.909804, 0.941176, 1, 1)
 position = Vector2(6, -8)
 polygon = PackedVector2Array(-1, -1, 1, -1, 1, 1, -1, 1)
 color = Color(0.101961, 0.133333, 0.188235, 1)
+
+[node name="CharacterSprite" type="AnimatedSprite2D" parent="." node_paths=PackedStringArray("placeholder")]
+centered = false
+script = ExtResource("5_sprite")
+placeholder = NodePath("../PlaceholderBody")
+fallback = Array[StringName]([&"fall", &"jump", &"idle"])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_body")

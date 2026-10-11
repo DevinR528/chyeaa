@@ -1,13 +1,13 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dn1swqknda2rt"]
 
 [ext_resource type="PackedScene" path="res://scenes/props/block.tscn" id="1_block"]
-[ext_resource type="Script" path="res://src/props/components/oscillating_motion.gd" id="2_motion"]
+[ext_resource type="Script" uid="uid://c0trbgm5ivpbw" path="res://src/props/components/oscillating_motion.gd" id="2_motion"]
 
-[node name="MovingPlatform" node_paths=PackedStringArray("oscillation") instance=ExtResource("1_block")]
+[node name="MovingPlatform" unique_id=26303792 node_paths=PackedStringArray("oscillation") instance=ExtResource("1_block")]
 size = Vector2(64, 32)
 oscillation = NodePath("OscillatingMotion")
 
-[node name="OscillatingMotion" type="Node" parent="."]
+[node name="OscillatingMotion" type="Node" parent="." index="1" unique_id=1276077561]
 script = ExtResource("2_motion")
 travel = 96.0
 speed = 2.0

@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://cbfqdxl45bu0a"]
+
+[ext_resource type="Script" uid="uid://bbv11ulon447i" path="res://src/presentation/backdrop.gd" id="1_backdrop"]
+[ext_resource type="Script" uid="uid://cjouqxpduvgfi" path="res://src/presentation/backdrop_layer.gd" id="2_layer"]
+[ext_resource type="Shader" uid="uid://bckxgjoy57xjm" path="res://assets/shaders/backdrop_plate.gdshader" id="3_plate"]
+[ext_resource type="Texture2D" uid="uid://bnbyxfxtd0m7j" path="res://assets/shaders/fog_texture.png" id="4_fog"]
+[ext_resource type="Texture2D" uid="uid://doda1bml0if3y" path="res://assets/art/eroded_earth/layers/sky.png" id="5_sky"]
+[ext_resource type="Texture2D" uid="uid://c7puawgx71cac" path="res://assets/art/eroded_earth/layers/buildings_mid.png" id="6_mid"]
+[ext_resource type="Texture2D" uid="uid://bcoujgnjx5lym" path="res://assets/art/eroded_earth/layers/junk_buildings_fg.png" id="7_fg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("3_plate")
+shader_parameter/desaturate_amount = 0.37
+shader_parameter/fog_noise = ExtResource("4_fog")
+shader_parameter/fog_density = 0.4
+shader_parameter/fog_scale = 1.6
+shader_parameter/fog_floor = 0.0
+shader_parameter/fog_horizon = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mid"]
+shader = ExtResource("3_plate")
+shader_parameter/desaturate_amount = 0.34
+shader_parameter/fog_noise = ExtResource("4_fog")
+shader_parameter/fog_density = 0.125
+shader_parameter/fog_scale = 0.75
+shader_parameter/fog_floor = 0.0
+shader_parameter/fog_horizon = 0.0
+
+[node name="ErodedEarth" type="Node2D" unique_id=1343013877]
+script = ExtResource("1_backdrop")
+
+[node name="Sky" type="Parallax2D" parent="." unique_id=1582202211]
+scroll_scale = Vector2(0.05, 0)
+script = ExtResource("2_layer")
+
+[node name="Plate" type="Sprite2D" parent="Sky" unique_id=1193467464]
+material = SubResource("ShaderMaterial_sky")
+texture = ExtResource("5_sky")
+centered = false
+
+[node name="BuildingsMid" type="Parallax2D" parent="." unique_id=2122802580]
+scroll_scale = Vector2(0.35, 0.12)
+script = ExtResource("2_layer")
+anchor = 1
+repeat_x = true
+
+[node name="Plate" type="Sprite2D" parent="BuildingsMid" unique_id=1626024485]
+material = SubResource("ShaderMaterial_mid")
+texture = ExtResource("6_mid")
+centered = false
+
+[node name="JunkBuildingsFg" type="Parallax2D" parent="." unique_id=2095783513]
+scroll_scale = Vector2(0.72, 0.28)
+script = ExtResource("2_layer")
+anchor = 1
+repeat_x = true
+
+[node name="Plate" type="Sprite2D" parent="JunkBuildingsFg" unique_id=1933109201]
+texture = ExtResource("7_fg")
+centered = false

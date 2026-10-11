@@ -21,6 +21,8 @@ const NO_RESTART := -1
 
 @export var room: Room
 @export var camera: FollowCamera
+## Optional; framed to the room so its layers line up with the room's edges.
+@export var backdrop: Backdrop
 ## Cycled with `next_character`. Order matches the prototype: Standard, Grappler, Pogo.
 @export var characters: Array[PackedScene] = []
 @export var character_index := 1
@@ -33,6 +35,8 @@ var _pending_restart := NO_RESTART
 
 
 func _ready() -> void:
+	if backdrop != null:
+		backdrop.frame(room.pixel_rect(), get_viewport_rect().size / camera.zoom)
 	switch_character(character_index)
 
 

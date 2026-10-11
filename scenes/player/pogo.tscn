@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_standard"]
 [ext_resource type="Script" uid="uid://d0mo88aa3nlon" path="res://src/player/pogo_strike.gd" id="2_pogo"]
+[ext_resource type="SpriteFrames" path="res://assets/art/old_man/old_man.sprite_frames.tres" id="3_frames"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pogo"]
 size = Vector2(20, 40)
@@ -21,8 +22,12 @@ polygon = PackedVector2Array(-10, -20, 10, -20, 10, 20, -10, 20)
 [node name="Eye" parent="PlaceholderBody" index="0"]
 position = Vector2(7, -15)
 
-[node name="CollisionShape2D" parent="." index="1"]
+[node name="CharacterSprite" parent="." index="1"]
+sprite_frames = ExtResource("3_frames")
+fallback = Array[StringName]([])
+
+[node name="CollisionShape2D" parent="." index="2"]
 shape = SubResource("RectangleShape2D_pogo")
 
-[node name="PogoStrike" type="Node2D" parent="." index="3" unique_id=902162361]
+[node name="PogoStrike" type="Node2D" parent="." index="5" unique_id=902162361]
 script = ExtResource("2_pogo")

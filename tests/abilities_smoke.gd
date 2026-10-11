@@ -44,7 +44,7 @@ func _check_grapple_latches_and_pulls() -> void:
 
 	Input.action_release(&"action")
 	await _physics_frames(2)
-	_expect(grapple.state == Grapple.State.RETRACT or grapple.state == Grapple.State.NORMAL, "releasing action did not let go")
+	_expect(grapple.state == Grapple.State.RETRACT or grapple.state == Grapple.State.INACTIVE, "releasing action did not let go")
 	await _free(room, player)
 
 

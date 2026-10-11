@@ -62,7 +62,7 @@ func _check_dash_distance() -> void:
 	Input.action_press(&"dash")
 	for _frame in 20:
 		await physics_frame
-		if player.motion == PlayerBody.MotionState.DASHING:
+		if player.move_state == PlayerBody.MovementState.DASH:
 			dash_end_x = player.global_position.x
 	Input.action_release(&"dash")
 

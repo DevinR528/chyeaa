@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_standard"]
 [ext_resource type="Script" path="res://src/player/grapple.gd" id="2_grapple"]
+[ext_resource type="SpriteFrames" path="res://assets/art/octo_idle/octo_idle.sprite_frames.tres" id="3_frames"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_grappler"]
 size = Vector2(35, 25)
@@ -17,7 +18,11 @@ polygon = PackedVector2Array(-17.5, -12.5, 17.5, -12.5, 17.5, 12.5, -17.5, 12.5)
 [node name="Eye" parent="PlaceholderBody" index="0"]
 position = Vector2(14.5, -7.5)
 
-[node name="CollisionShape2D" parent="." index="1"]
+[node name="CharacterSprite" parent="." index="1"]
+sprite_frames = ExtResource("3_frames")
+fallback = Array[StringName]([])
+
+[node name="CollisionShape2D" parent="." index="2"]
 position = Vector2(0.5, 0.5)
 shape = SubResource("RectangleShape2D_grappler")
 

@@ -1,0 +1,154 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://bgcapfvqjr7vs"]
+
+[ext_resource type="Texture2D" uid="uid://c7p8jup4ghlhk" path="res://assets/art/old_man_idle/old_man_idle.png" id="1_yb52p"]
+[ext_resource type="Texture2D" uid="uid://ixgubk1kywru" path="res://assets/art/old_man_p_run/old_man_p_run.png" id="2_1wpp0"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yb52p"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 0, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1wpp0"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 88, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_02frm"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 176, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3na4a"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 264, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_st5w5"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 352, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y38bf"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 440, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4a61m"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 528, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8afur"]
+atlas = ExtResource("1_yb52p")
+region = Rect2(0, 616, 72, 88)
+margin = Rect2(10, 0, 16, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_32i0m"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 0, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1dujw"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 88, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8phwk"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 176, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sos78"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 264, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_do6hl"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 352, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5jhmg"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 440, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ahuvo"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 528, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oq6kp"]
+atlas = ExtResource("2_1wpp0")
+region = Rect2(0, 616, 88, 88)
+margin = Rect2(0, 1, 0, 1)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_yb52p")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_1wpp0")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_02frm")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_3na4a")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_st5w5")
+}, {
+"duration": 0.175,
+"texture": SubResource("AtlasTexture_y38bf")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_4a61m")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_8afur")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_32i0m")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_1dujw")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_8phwk")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_sos78")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_do6hl")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_5jhmg")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_ahuvo")
+}, {
+"duration": 0.125,
+"texture": SubResource("AtlasTexture_oq6kp")
+}],
+"loop": 1,
+"name": &"run",
+"speed": 1.0
+}]
+metadata/origin = Vector2(38, 79)
+metadata/art_scale = 1.0
+metadata/frame_events = {
+"run": {
+0: PackedStringArray("footstep_right"),
+4: PackedStringArray("footstep_left")
+}
+}
+metadata/sync_fingerprint = 652247095
