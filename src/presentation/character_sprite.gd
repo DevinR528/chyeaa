@@ -19,7 +19,14 @@ signal frame_event(event_name: StringName, clip: StringName, frame_index: int)
 
 ## Clip being played, or NO_CLIP.
 var clip: StringName = NO_CLIP
+## Keyed before foot plants; negative trails behind the body's facing direction.
+var visual_stride_offset := 0.0:
+	set(value):
+		visual_stride_offset = value
+		if is_node_ready():
+			position = _body_pivot + Vector2(body.facing * visual_stride_offset, 0.0)
 var _art_scale := 1.0
+var _body_pivot := Vector2.ZERO
 
 @onready var body: PlayerBody = get_parent()
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -30,7 +37,8 @@ func _ready() -> void:
 	region_enabled = true
 	# Children are ready before the body, so its @onready `body_shape` is not set yet.
 	var shape := body.get_node(^"CollisionShape2D") as CollisionShape2D
-	position = shape.position + Vector2(0.0, (shape.shape as RectangleShape2D).size.y / 2.0)
+	_body_pivot = shape.position + Vector2(0.0, (shape.shape as RectangleShape2D).size.y / 2.0)
+	position = _body_pivot
 	var library: AnimationLibrary
 	if animation_player.has_animation_library(&""):
 		library = animation_player.get_animation_library(&"")
@@ -41,6 +49,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	scale = Vector2(body.facing * _art_scale, _art_scale)
+	position = _body_pivot + Vector2(body.facing * visual_stride_offset, 0.0)
 	_show(resolve_clip())
 
 
@@ -64,6 +73,7 @@ func _show(next: StringName, force := false) -> void:
 	visible = has_clip
 	if placeholder != null:
 		placeholder.visible = not has_clip
+	visual_stride_offset = 0.0
 	if has_clip:
 		animation_player.play(clip)
 		# `play` applies on the next mixer tick; key frame zero now so pivots,
@@ -79,32 +89,3 @@ func _show(next: StringName, force := false) -> void:
 ## signal so generated animation resources never decide how an event sounds.
 func _animation_event(event_name: StringName, event_clip: StringName, frame_index: int) -> void:
 	frame_event.emit(event_name, event_clip, frame_index)
-
-
-## The active run clip's footstep marks and AnimationPlayer clock. Empty means
-## locomotion should keep its ordinary constant-speed acceleration.
-func run_stride() -> Dictionary:
-	if clip != &"run" or animation_player.current_animation != &"run":
-		return {}
-	var animation := animation_player.get_animation(&"run")
-	if animation == null or animation.length <= 0.0:
-		return {}
-	var times: Array[float] = []
-	for track_index in animation.get_track_count():
-		if animation.track_get_type(track_index) != Animation.TYPE_METHOD:
-			continue
-		for key_index in animation.track_get_key_count(track_index):
-			var call: Dictionary = animation.track_get_key_value(track_index, key_index)
-			if call.get("method") != &"_animation_event":
-				continue
-			var args: Array = call.get("args", [])
-			if not args.is_empty() and String(args[0]).begins_with("footstep"):
-				times.append(animation.track_get_key_time(track_index, key_index))
-	if times.is_empty():
-		return {}
-	times.sort()
-	return {
-		"times": times,
-		"loop": animation.length,
-		"time": animation_player.current_animation_position,
-	}

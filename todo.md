@@ -56,8 +56,8 @@ Each clip keys `texture`, `region_rect`, and `offset`, so clips with different
 sheets need no shared canvas (the AtlasTexture margins in `sync_art.gd` go away).
 
 - [x] `sync_art.gd` writes an `AnimationLibrary` per anim document instead of SpriteFrames.
-- [x] Re-syncing replaces only generated `texture`, `region_rect`, `offset`, and
-  animation-event method tracks and keeps tracks added in Godot.
+- [x] Re-syncing replaces only generated texture, region, pivot, visual-stride,
+  and animation-event tracks and keeps tracks added in Godot.
 - [x] Anim-document `events` become method-call keys that retain the presentation
   event boundary.
 - [x] `CharacterSprite` keeps choosing clips the same way (the ability's clip,

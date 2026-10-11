@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_standard"]
 [ext_resource type="Script" uid="uid://d0mo88aa3nlon" path="res://src/player/pogo_strike.gd" id="2_pogo"]
 [ext_resource type="Texture2D" uid="uid://ixgubk1kywru" path="res://assets/art/old_man_p_run/old_man_p_run.png" id="2_sbwyt"]
-[ext_resource type="AnimationLibrary" uid="uid://ds3qlbyto1xou" path="res://assets/art/old_man/old_man.animation_library.tres" id="3_animations"]
+[ext_resource type="AnimationLibrary" path="res://assets/art/old_man/old_man.animation_library.tres" id="3_animations"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pogo"]
 size = Vector2(20, 38)
@@ -14,7 +14,6 @@ stat_overrides = Dictionary[StringName, float]({
 &"max_run": 320.0
 })
 uses_pogo_surfaces = true
-uses_footstep_stride = true
 ability = NodePath("PogoStrike")
 
 [node name="PlaceholderBody" parent="." index="0"]
@@ -26,8 +25,8 @@ position = Vector2(7, -15)
 
 [node name="CharacterSprite" parent="." index="1"]
 texture = ExtResource("2_sbwyt")
-offset = Vector2(-38, -78)
-region_rect = Rect2(0, 0, 88, 88)
+offset = Vector2(-28, -79)
+region_rect = Rect2(0, 0, 72, 88)
 fallback = Array[StringName]([])
 
 [node name="AnimationPlayer" parent="CharacterSprite" index="0"]

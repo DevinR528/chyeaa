@@ -51,6 +51,7 @@ func _check_animation_libraries_match_documents() -> void:
 			var texture_track := _find_track(animation, ^".:texture", Animation.TYPE_VALUE)
 			var region_track := _find_track(animation, ^".:region_rect", Animation.TYPE_VALUE)
 			var offset_track := _find_track(animation, ^".:offset", Animation.TYPE_VALUE)
+			var stride_track := _find_track(animation, ^".:visual_stride_offset", Animation.TYPE_VALUE)
 			var event_track := _find_track(animation, ^".", Animation.TYPE_METHOD)
 			_expect(texture_track >= 0 and region_track >= 0 and offset_track >= 0, "%s is missing generated visual tracks" % label)
 			if texture_track < 0 or region_track < 0 or offset_track < 0:
@@ -84,6 +85,12 @@ func _check_animation_libraries_match_documents() -> void:
 			_expect(is_equal_approx(animation.length, expected_time), "%s has the wrong loop length" % label)
 			var expects_events := (clip.frames as Array).any(func(frame: Dictionary) -> bool: return not (frame.get("events", []) as Array).is_empty())
 			_expect((event_track >= 0) == expects_events, "%s generated event track does not match its document" % label)
+			var stride_offsets := SYNC_ART._footstep_stride_offsets(clip.frames)
+			var expects_stride := stride_offsets.any(func(value: float) -> bool: return not is_zero_approx(value))
+			_expect((stride_track >= 0) == expects_stride, "%s visual stride track does not match its footsteps" % label)
+			if stride_track >= 0:
+				for frame_index in stride_offsets.size():
+					_expect(animation.track_get_key_value(stride_track, frame_index) == stride_offsets[frame_index], "%s frame %d has the wrong visual stride offset" % [label, frame_index])
 
 
 func _check_authored_track_survives_sync() -> void:
@@ -131,10 +138,21 @@ func _check_pogo_sprite() -> void:
 	await _next_frame()
 	_expect(sprite.clip == &"run" and sprite.scale.x < 0.0, "running left did not play a flipped run")
 	_expect(events == [&"footstep_right"], "entering run did not fire its first frame's footstep: %s" % [events])
+	_expect(is_equal_approx(sprite.global_position.x, feet.x), "sprite was not aligned with the hitbox on a footstep")
+	sprite.animation_player.seek(0.25, true)
+	_expect(is_equal_approx(sprite.global_position.x, feet.x + 1.0), "sprite did not trail one pixel two frames before a leftward footstep")
+	sprite.animation_player.seek(0.375, true)
+	_expect(is_equal_approx(sprite.global_position.x, feet.x + 2.0), "sprite did not trail two pixels before a leftward footstep")
+	player.move_state = PlayerBody.MovementState.IDLE
+	await _next_frame()
+	_expect(is_equal_approx(sprite.global_position.x, feet.x), "a clip without footsteps did not clear the visual stride")
+	player.move_state = PlayerBody.MovementState.RUN
+	await _next_frame()
 	sprite.animation_player.seek(0.49)
 	sprite.animation_player.advance(0.02)
 	await process_frame
 	_expect(events.back() == &"footstep_left", "run frame 4 did not fire footstep_left: %s at %.3f" % [events, sprite.animation_player.current_animation_position])
+	_expect(is_equal_approx(sprite.global_position.x, feet.x), "sprite did not catch up to the hitbox on the footstep")
 
 	player.move_state = PlayerBody.MovementState.JUMP
 	await _next_frame()

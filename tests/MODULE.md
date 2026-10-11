@@ -4,7 +4,7 @@ Headless tests for movement feel, abilities, contacts, moving platforms, and
 piece stitching. Test-only scenes belong beside the scripts in this folder.
 
 - `locomotion_smoke.gd` — input latching, run, jump, dash, coyote, buffer, jump
-  cut, and Pogo's footstep stride curve and average speed.
+  cut, and Pogo's constant physical speed during its visual stride.
 - `demo_room_smoke.gd` — spawn, landing, character switching and surfaces, and
   death, exit, and fall restarts in the demo room. Does not pin authored room content.
 - `abilities_smoke.gd` — grapple latch, pull, jump-off, and solid block; pogo down
@@ -20,7 +20,8 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   pickup and throw, ball bounces off the floor, walkers it kills, and other
   balls, standing on an idle ball, and a thrower's immunity to their own ball.
 - `art_smoke.gd` — synced AnimationLibraries match their anim documents (frame
-  timing, textures, regions, pivots, event keys, and authored-track preservation),
+  timing, textures, regions, pivots, event/visual-stride keys, and
+  authored-track preservation),
   character sprites pick clips, flip, show the placeholder, and fire frame
   events, and backdrop layers land where the
   prototype's placement put them and follow the camera. Run `sync_art.gd` first.

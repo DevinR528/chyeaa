@@ -45,8 +45,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
   the ability's `animation_clip()` (the body's `movement_clip()`
   while the ability is inactive), else a `fallback` clip, else the placeholder
   body shows. The body's `move_state` is its one movement state. Generated method
-  keys emit `frame_event`. Pogo reads those footstep marks and the AnimationPlayer
-  clock for its grounded stride. Audio routing and screen shake are not ported yet.
+  keys emit `frame_event`; generated visual-stride keys trail the sprite just
+  before a foot plant without changing physical run speed. Audio routing and
+  screen shake are not ported yet.
 - `debug/` — game-specific runtime overlays and readouts. `ReachOverlay` draws
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
 - `physics_layers.gd` — named collision layer bits: world, hazard, exit, fall,

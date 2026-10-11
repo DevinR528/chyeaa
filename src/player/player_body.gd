@@ -49,8 +49,6 @@ const CRUSH_SENSOR_INSET := 3.0
 ## Rooms enable their grapple and pogo tile layers only for characters that use them.
 @export var uses_grapple_surfaces := false
 @export var uses_pogo_surfaces := false
-## Pogo alone shapes grounded run speed from the active run clip's footstep keys.
-@export var uses_footstep_stride := false
 ## The character's ability child node; empty for Standard.
 @export var ability: PlayerAbility
 
@@ -84,7 +82,6 @@ var _stomp_surface_y := 0.0
 @onready var player_input: PlayerInput = get_node(input_path)
 @onready var body_shape: CollisionShape2D = $CollisionShape2D
 @onready var carrier: Carrier = $Carrier
-@onready var character_sprite: CharacterSprite = get_node_or_null(^"CharacterSprite")
 
 
 func _ready() -> void:
@@ -299,16 +296,8 @@ func _update_motion(
 		move_x = 0.0
 	var target_x := move_x * stats.max_run
 	if was_on_floor:
-		var stride := _run_stride() if not is_zero_approx(move_x) else {}
-		if not stride.is_empty():
-			var times: Array[float] = stride.times
-			var step := FootstepStride.phase(stride.time, times, stride.loop)
-			var stride_target := target_x * FootstepStride.scale(step.u)
-			var rate := FootstepStride.acceleration(stats.max_run, step.span)
-			velocity.x = move_toward(velocity.x, stride_target, rate * delta)
-		else:
-			var rate := stats.ground_accel if not is_zero_approx(move_x) else stats.ground_friction
-			velocity.x = move_toward(velocity.x, target_x, rate * delta)
+		var rate := stats.ground_accel if not is_zero_approx(move_x) else stats.ground_friction
+		velocity.x = move_toward(velocity.x, target_x, rate * delta)
 	elif not is_zero_approx(move_x):
 		velocity.x = move_toward(velocity.x, target_x, stats.air_accel * delta)
 	else:
@@ -377,12 +366,6 @@ func _notify_stood_on() -> void:
 ## The clip for `move_state`. An active ability may play another (see `PlayerAbility.animation_clip`).
 func movement_clip() -> StringName:
 	return MOVEMENT_CLIPS[move_state]
-
-
-func _run_stride() -> Dictionary:
-	if not uses_footstep_stride or character_sprite == null:
-		return {}
-	return character_sprite.run_stride()
 
 
 ## Every state except DASH, read from the last move's floor contact and velocity.

@@ -97,23 +97,19 @@ Requirements:
 4. Keep an event boundary for presentation listeners: a generated method key
    calls the character presentation node, which emits an animation event. Do not
    put audio playback directly in generated animation resources.
-5. Pogo ground running uses the prototype stride curve: stall `0.8`, peak `1.2`,
-   rise over `12%` of the interval, mean scale `1`. Read footstep key times and
-   the animation's loop length from the active run animation. Use the
-   AnimationPlayer clock; do not add a second animation clock.
-6. Reset stride when leaving grounded run. Characters/clips without footstep
-   marks retain the current constant-speed behavior.
+5. Pogo ground running keeps constant physical run speed. On the two animation
+   frames before each footstep, generated presentation keys trail the sprite by
+   one then two pixels; the footstep frame catches up to the hitbox.
+6. The visual offset follows facing and resets for clips without footstep marks.
 7. Placeholder visibility, facing flip, clip fallback, pivots, and hitstop
    behavior must remain unchanged.
 
 Acceptance:
 
-- Port the pure stride assertions from `stride.test.ts`.
 - `art_smoke` covers generated timing, pivot, clip selection, flip,
-  placeholder, event keys, and preservation of a hand-authored track.
-- A locomotion test proves Pogo's instantaneous run speed reaches the low/high
-  portions of the curve while average speed over complete strides remains the
-  existing max run.
+  placeholder, event and visual stride keys, and preservation of a hand-authored
+  track.
+- A locomotion test proves animation does not vary Pogo's physical run speed.
 - `sync_art.gd` can run twice without changing output or deleting hand work.
 
 Do not also add sound in this task.

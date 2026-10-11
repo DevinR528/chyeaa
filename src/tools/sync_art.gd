@@ -176,6 +176,10 @@ static func _build_animation_library(anim: Dictionary, library: AnimationLibrary
 		var texture_track := _add_value_track(animation, ^".:texture")
 		var region_track := _add_value_track(animation, ^".:region_rect")
 		var offset_track := _add_value_track(animation, ^".:offset")
+		var stride_track := -1
+		var stride_offsets := _footstep_stride_offsets(clip.frames)
+		if stride_offsets.any(func(value: float) -> bool: return not is_zero_approx(value)):
+			stride_track = _add_value_track(animation, ^".:visual_stride_offset")
 		var event_track := -1
 		var time := 0.0
 		var raw_frames: Array = clip.frames
@@ -187,6 +191,8 @@ static func _build_animation_library(anim: Dictionary, library: AnimationLibrary
 			animation.track_insert_key(texture_track, time, sheet)
 			animation.track_insert_key(region_track, time, region)
 			animation.track_insert_key(offset_track, time, -_clip_origin(doc, clip))
+			if stride_track >= 0:
+				animation.track_insert_key(stride_track, time, stride_offsets[index])
 			if frame is Dictionary:
 				for event_name: String in frame.get("events", []):
 					if event_track < 0:
@@ -215,7 +221,7 @@ static func _is_generated_track(animation: Animation, track: int) -> bool:
 		return true
 	var path := animation.track_get_path(track)
 	if animation.track_get_type(track) == Animation.TYPE_VALUE:
-		return path in [^".:texture", ^".:region_rect", ^".:offset"]
+		return path in [^".:texture", ^".:region_rect", ^".:offset", ^".:visual_stride_offset"]
 	if animation.track_get_type(track) != Animation.TYPE_METHOD or animation.track_get_key_count(track) == 0:
 		return false
 	for key in animation.track_get_key_count(track):
@@ -223,6 +229,25 @@ static func _is_generated_track(animation: Animation, track: int) -> bool:
 		if call.get("method") != EVENT_METHOD:
 			return false
 	return true
+
+
+## Hold the drawing one and two pixels behind the body on the two animation
+## frames before each plant, then catch up on its footstep frame.
+static func _footstep_stride_offsets(frames: Array) -> Array[float]:
+	var offsets: Array[float] = []
+	offsets.resize(frames.size())
+	offsets.fill(0.0)
+	for plant in frames.size():
+		var frame: Variant = frames[plant]
+		if not frame is Dictionary:
+			continue
+		var events: Array = frame.get("events", [])
+		if not events.any(func(event: String) -> bool: return event.begins_with("footstep")):
+			continue
+		for frames_before in range(1, mini(2, frames.size() - 1) + 1):
+			var index := posmod(plant - frames_before, frames.size())
+			offsets[index] = minf(offsets[index], -float(3 - frames_before))
+	return offsets
 
 
 static func _clip_sheet(anim: Dictionary, clip: Dictionary) -> String:
