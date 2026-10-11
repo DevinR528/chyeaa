@@ -23,6 +23,8 @@ const NO_RESTART := -1
 @export var camera: FollowCamera
 ## Optional; framed to the room so its layers line up with the room's edges.
 @export var backdrop: Backdrop
+## Optional presentation listener; gameplay only provides completed facts.
+@export var audio: GameAudio
 ## Cycled with `next_character`. Order matches the prototype: Standard, Grappler, Pogo.
 @export var characters: Array[PackedScene] = []
 @export var character_index := 1
@@ -38,6 +40,8 @@ func _ready() -> void:
 	if backdrop != null:
 		backdrop.frame(room.pixel_rect(), get_viewport_rect().size / camera.zoom)
 	switch_character(character_index)
+	if audio != null:
+		audio.bind_runner(self)
 
 
 func _physics_process(delta: float) -> void:

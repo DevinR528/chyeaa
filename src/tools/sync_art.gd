@@ -16,6 +16,15 @@ const ART_INDEX := "art/index.json"
 const BACKGROUNDS_DIR := "backgrounds"
 const SHADERS_DIR := "shaders"
 const TILESETS_INDEX := "tilesets/index.json"
+const USED_AUDIO: Array[String] = [
+	"audio/fanfare.ogg",
+	"audio/bash.ogg",
+	"audio/footstep.wav",
+	"audio/footstep_cane.wav",
+	"audio/jump_land.wav",
+]
+## Godot 4.7 does not import the prototype's FLAC files. Their PCM WAV
+## conversions are committed as `audio/dash2.wav` and `audio/bird_poo.wav`.
 const DEST_ROOT := "res://assets"
 const ANIMATION_LIBRARY_SUFFIX := ".animation_library.tres"
 
@@ -36,6 +45,8 @@ func _sync() -> int:
 			copies[_clip_sheet(anim, anim.doc.clips[clip_name])] = true
 	for image: String in _backdrop_images() + _tileset_images():
 		copies[image] = true
+	for audio: String in USED_AUDIO:
+		copies[audio] = true
 
 	var changed := 0
 	for source: String in copies:

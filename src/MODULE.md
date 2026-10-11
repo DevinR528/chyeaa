@@ -14,8 +14,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
 - `input/` — action sampling, press latching, and aim.
 - `rooms/` — `Room` (tile layers, cell kind and solidity queries, kill plane,
   out-of-bounds walls) and `RoomRunner` (character spawn and switching, hitstop,
-  restarts on fall, exit, and death). Queries take 8 px `Terrain` cells and also
-  read the `BlockTerrain` tile covering them, whatever its tile size.
+  restarts on fall, exit, and death). Kind and solidity ask the physics space,
+  so a shape counts wherever it reaches. Grapple and pogo tiles are sensor
+  layers; props with those surfaces are queried by their box, not those layers.
 - `props/` — `TileProp`: a box with a surface kind (solid, grapple, exit, death,
   pogo, or none). Optional component child nodes in `props/components/` move it
   (`OscillatingMotion`, `PathMotion`), spread the props it carries (`SpinMotion`),
@@ -46,12 +47,14 @@ Typed GDScript only. Scenes and imported assets do not live here.
   while the ability is inactive), else a `fallback` clip, else the placeholder
   body shows. The body's `move_state` is its one movement state. Generated method
   keys emit `frame_event`; generated visual-stride keys trail the sprite just
-  before a foot plant without changing physical run speed. Audio routing and
-  screen shake are not ported yet.
+  before a foot plant without changing physical run speed. `GameAudio` maps
+  completed player, runner, Pogo, and animation facts to a one-shot pool and one
+  replacing footstep voice. Screen shake is not ported yet.
 - `debug/` — game-specific runtime overlays and readouts. `ReachOverlay` draws
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
 - `physics_layers.gd` — named collision layer bits: world, hazard, exit, fall,
-  player, contact. The player body is on its own layer, never world.
+  player, contact, grapple, pogo. Grapple and pogo are sensor layers (mask 0).
+  The player body is on its own layer, never world.
 
 Code that real art or animation will replace is grouped in
 `#region Placeholder visuals` blocks with a note on what replaces it.

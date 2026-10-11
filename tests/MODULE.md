@@ -25,6 +25,9 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   character sprites pick clips, flip, show the placeholder, and fire frame
   events, and backdrop layers land where the
   prototype's placement put them and follow the camera. Run `sync_art.gd` first.
+- `audio_smoke.gd` — event-to-stream mapping, landing volume/pitch, pooled
+  one-shots, replacing/stopping the footstep voice, and reconnecting after a
+  character switch, with device playback disabled.
 - `block_terrain_smoke.gd` — 32 px art tiles on 8 px cells (also flipped and
   transposed) answer the room's cell queries wherever physics says they collide,
   hold the player up, and death blocks are a hazard. Every tile in the demo's

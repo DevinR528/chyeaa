@@ -12,6 +12,8 @@ Standard, Grappler, and Pogo.
   `PlaceholderBody` (box and eye) shows whenever no clip resolves.
 - `backgrounds/` — backdrop scenes: a `Backdrop` root with one `BackdropLayer`
   per plate, back to front. Plate effects are a `backdrop_plate.gdshader` material.
+- `presentation/` — `game_audio.tscn`, the pooled gameplay-sound listener
+  instanced by `main.tscn` and wired to its `RoomRunner`.
 - `props/` — `block.tscn` is the base `TileProp`. `moving_platform.tscn`,
   `breakable.tscn`, and `windmill.tscn` inherit it with a component already
   added. Turn on Editable Children on an instance to tune its components.

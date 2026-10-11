@@ -116,7 +116,7 @@ Do not also add sound in this task.
 
 ## 2. Audio and gameplay event wiring
 
-Status: ready after Task 1. Own audio copying, playback, and event connections;
+Status: complete. Own audio copying, playback, and event connections;
 do not decide gameplay outcomes in the audio code.
 
 Prototype sources:
@@ -397,17 +397,10 @@ Acceptance:
 
 ## 8. Optional room-query lookup
 
-Status: not justified by current measurements. Do only after profiling shows a
-real regression.
+Status: retired. Kind and solidity query the physics space, so the polygon scan
+and the cell lookup table are both gone.
 
-Current measurement: `kind_at` and `is_solid_cell` are about `9 us` per call in
-the demo; a grapple throw is about `0.5 ms` of cell queries in its busiest tick.
-
-If needed, build per-layer 8 px cell-to-kind/solid tables once in `Room._ready`
-and cache room bounds. Character changes only enable/disable layers and do not
-rebuild. Each room owns its table. Any future runtime tile painting must update
-affected entries. Keep `block_terrain_smoke` as the behavioral oracle,
-including flipped/transposed large tiles.
+`block_terrain_smoke` remains the oracle for flipped and transposed large tiles.
 
 ## 10. Approval-gated or deferred
 

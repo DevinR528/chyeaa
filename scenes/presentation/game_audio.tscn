@@ -1,0 +1,20 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/game_audio.gd" id="1_audio"]
+[ext_resource type="AudioStream" path="res://assets/audio/dash2.wav" id="2_dash"]
+[ext_resource type="AudioStream" path="res://assets/audio/jump_land.wav" id="3_land"]
+[ext_resource type="AudioStream" path="res://assets/audio/bird_poo.wav" id="4_death"]
+[ext_resource type="AudioStream" path="res://assets/audio/fanfare.ogg" id="5_exit"]
+[ext_resource type="AudioStream" path="res://assets/audio/bash.ogg" id="6_bash"]
+[ext_resource type="AudioStream" path="res://assets/audio/footstep.wav" id="7_step"]
+[ext_resource type="AudioStream" path="res://assets/audio/footstep_cane.wav" id="8_cane"]
+
+[node name="GameAudio" type="Node"]
+script = ExtResource("1_audio")
+dash_stream = ExtResource("2_dash")
+land_stream = ExtResource("3_land")
+death_stream = ExtResource("4_death")
+exit_stream = ExtResource("5_exit")
+bash_stream = ExtResource("6_bash")
+footstep_right_stream = ExtResource("7_step")
+footstep_left_stream = ExtResource("8_cane")

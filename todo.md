@@ -33,17 +33,11 @@ Before converting, handle these:
 - `call_group` runs immediately. From inside a contact handler, use
   `call_group_flags` with `SceneTree.GROUP_CALL_DEFERRED` (see `ContactBox`).
 
-## Room cell queries: build a lookup table if they get slow
+## Room cell queries
 
-`kind_at_cell` and `is_solid_cell` scan neighbouring cells for big tiles' collision
-(5x5 on BlockTerrain). About 9 us per query; a grapple throw makes about 54 per
-tick (about 0.5 ms). Fine today; do this if profiling says otherwise.
-
-- [ ] In `Room._ready`, build each layer's 8 px cell -> kind and solid table once,
-  and cache `cell_bounds()`. Queries still skip disabled layers, so a character
-  switch needs no rebuild; each room builds its own.
-- [ ] Anything that paints tiles at runtime (breakable terrain) must update the
-  table for the cells it changes.
+`kind_at_cell` and `is_solid_cell` ask the physics space, so big-tile shapes,
+flips, and transposes stay in the engine. Grapple and pogo tiles are sensor
+layers. Props with those surfaces are still found by their box.
 
 ## Move character sprites to Sprite2D + AnimationPlayer
 

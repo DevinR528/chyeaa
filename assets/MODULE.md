@@ -20,3 +20,6 @@ may update art atlases and animation resources, but must not rewrite room scenes
   atlases by hand.
 - `shaders/` — `backdrop_plate.gdshader` (the prototype's desaturate then fog
   passes, combined) and `fog_texture.png` (synced from `../assets/shaders`).
+- `audio/` — only sounds used by `GameAudio`. `sync_art.gd` copies the WAV/OGG
+  sources; `dash2.wav` and `bird_poo.wav` are PCM conversions because Godot 4.7
+  does not import their prototype FLAC sources.

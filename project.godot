@@ -119,6 +119,8 @@ toggle_fullscreen={
 2d_physics/layer_4="fall"
 2d_physics/layer_5="player"
 2d_physics/layer_6="contact"
+2d_physics/layer_7="grapple"
+2d_physics/layer_8="pogo"
 
 [physics]
 
