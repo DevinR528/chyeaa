@@ -1,0 +1,64 @@
+[gd_scene format=4]
+
+[ext_resource type="TileSet" path="res://resources/tiles/kind_tiles.tres" id="1_p0wvn"]
+[ext_resource type="PackedScene" path="res://scenes/props/windmill.tscn" id="2_bralp"]
+[ext_resource type="PackedScene" path="res://scenes/props/block.tscn" id="3_j4o4u"]
+
+[node name="CrushTest" type="Node2D" unique_id=1439340512]
+
+[node name="Terrain" type="TileMapLayer" parent="." unique_id=185328110]
+tile_map_data = PackedByteArray("AAAKABkAAAAAAAAAAAALABkAAAAAAAAAAAAMABkAAAAAAAAAAAANABkAAAAAAAAAAAAOABkAAAAAAAAAAAAPABkAAAAAAAAAAAAHABoAAAAAAAAAAAAIABoAAAAAAAAAAAAJABoAAAAAAAAAAAAAACUAAAAAAAAAAAABACUAAAAAAAAAAAACACUAAAAAAAAAAAADACUAAAAAAAAAAAAEACUAAAAAAAAAAAAFACUAAAAAAAAAAAAGACUAAAAAAAAAAAAHACUAAAAAAAAAAAAAACYAAAAAAAAAAAABACYAAAAAAAAAAAACACYAAAAAAAAAAAADACYAAAAAAAAAAAAEACYAAAAAAAAAAAAFACYAAAAAAAAAAAAGACYAAAAAAAAAAAAHACYAAAAAAAAAAAA=")
+tile_set = ExtResource("1_p0wvn")
+
+[node name="BlockTerrain" type="TileMapLayer" parent="." unique_id=943981800]
+tile_set = ExtResource("1_p0wvn")
+
+[node name="GrappleSurfaces" type="TileMapLayer" parent="." unique_id=422847000]
+tile_set = ExtResource("1_p0wvn")
+
+[node name="PogoSurfaces" type="TileMapLayer" parent="." unique_id=573444188]
+tile_set = ExtResource("1_p0wvn")
+
+[node name="Spawn" type="Marker2D" parent="." unique_id=701038676]
+position = Vector2(23, 286)
+
+[node name="EntryPortal" type="Node2D" parent="." unique_id=2011495171]
+
+[node name="A" type="Marker2D" parent="EntryPortal" unique_id=770016848]
+position = Vector2(4, 204)
+
+[node name="B" type="Marker2D" parent="EntryPortal" unique_id=226059146]
+position = Vector2(4, 292)
+
+[node name="ExitPortal" type="Node2D" parent="." unique_id=820704759]
+
+[node name="A" type="Marker2D" parent="ExitPortal" unique_id=2101316816]
+position = Vector2(388, 140)
+
+[node name="B" type="Marker2D" parent="ExitPortal" unique_id=2038824353]
+position = Vector2(388, 236)
+
+[node name="Props" type="Node2D" parent="." unique_id=1599592363]
+
+[node name="Windmill" parent="Props" unique_id=755930912 instance=ExtResource("2_bralp")]
+position = Vector2(208, 224)
+
+[node name="SpinMotion" parent="Props/Windmill" index="0"]
+radius = 128.0
+turns_per_second = 0.4
+
+[node name="Block" parent="Props/Windmill" unique_id=1849954081 instance=ExtResource("3_j4o4u")]
+size = Vector2(32, 16)
+
+[node name="Block2" parent="Props/Windmill" unique_id=1661517710 instance=ExtResource("3_j4o4u")]
+size = Vector2(32, 16)
+
+[node name="Block3" parent="Props/Windmill" unique_id=317048484 instance=ExtResource("3_j4o4u")]
+size = Vector2(32, 16)
+
+[node name="Actors" type="Node2D" parent="." unique_id=354426903]
+
+[editable path="Props/Windmill"]
+[editable path="Props/Windmill/Block"]
+[editable path="Props/Windmill/Block2"]
+[editable path="Props/Windmill/Block3"]

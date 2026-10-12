@@ -30,11 +30,15 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 - `audio_smoke.gd` — event-to-stream mapping, landing volume/pitch, pooled
   one-shots, replacing/stopping the footstep voice, and reconnecting after a
   character switch, with device playback disabled.
+- `presentation_smoke.gd` — quadratic screen-shake decay/replacement/direction,
+  vignette screen coordinates and radii, and Pogo shake beginning after hitstop.
+- `pieces_smoke.gd` — imported scene structure, portal placement, flex corridors,
+  overlap rejection, caps/budget/determinism, and a generated Room in RoomRunner.
 - `block_terrain_smoke.gd` — 32 px art tiles on 8 px cells (also flipped and
   transposed) answer the room's cell queries wherever physics says they collide,
   hold the player up, and death blocks are a hazard. Every tile in the demo's
-  hand-made TileSet has collision matching its kind, and
-  none overlaps Terrain.
+  hand-made TileSet has collision matching its kind. Terrain may remain beneath
+  art tiles while rooms migrate from placeholder cells.
 - `test_room_builder.gd` — preloaded helper that builds rooms, props, actors, and
   players in code.
 

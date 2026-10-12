@@ -213,7 +213,7 @@ Acceptance:
 
 ## 4. Piece import and stitching
 
-Status: ready. Task 3 supplies the Switch and Gate prefabs used by
+Status: complete. Task 3 supplies the Switch and Gate prefabs used by
 `on_off_gate.json`.
 
 Prototype sources:
@@ -272,7 +272,7 @@ Acceptance:
 
 ## 5. Screen shake and vignette
 
-Status: ready after Task 2 establishes the Pogo side-connect event. Keep this in
+Status: complete. Kept in
 presentation; gameplay only requests the effect.
 
 Prototype sources:

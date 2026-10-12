@@ -41,7 +41,7 @@ func _run() -> void:
 
 	main.switch_character(2)
 	var pogo := main.player
-	(pogo.ability as PogoStrike).side_bashed.emit()
+	(pogo.ability as PogoStrike).side_bashed.emit(1.0)
 	_expect_request(&"bash", "bash.ogg", 0.7, 1.0)
 
 	var sprite := pogo.get_node(^"CharacterSprite") as CharacterSprite

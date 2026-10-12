@@ -1,0 +1,64 @@
+[gd_scene format=4]
+
+[ext_resource type="TileSet" path="res://resources/tiles/kind_tiles.tres" id="1_vonaj"]
+[ext_resource type="PackedScene" path="res://scenes/props/windmill.tscn" id="2_i8wlg"]
+[ext_resource type="PackedScene" path="res://scenes/props/block.tscn" id="3_i01fh"]
+
+[node name="WindmillTestCopy" type="Node2D" unique_id=437332382]
+
+[node name="Terrain" type="TileMapLayer" parent="." unique_id=243970235]
+tile_map_data = PackedByteArray("AAAAACUAAAAAAAAAAAABACUAAAAAAAAAAAACACUAAAAAAAAAAAADACUAAAAAAAAAAAAEACUAAAAAAAAAAAAFACUAAAAAAAAAAAAGACUAAAAAAAAAAAAHACUAAAAAAAAAAAAAACYAAAAAAAAAAAABACYAAAAAAAAAAAACACYAAAAAAAAAAAADACYAAAAAAAAAAAAEACYAAAAAAAAAAAAFACYAAAAAAAAAAAAGACYAAAAAAAAAAAAHACYAAAAAAAAAAAA=")
+tile_set = ExtResource("1_vonaj")
+
+[node name="BlockTerrain" type="TileMapLayer" parent="." unique_id=1095045506]
+tile_set = ExtResource("1_vonaj")
+
+[node name="GrappleSurfaces" type="TileMapLayer" parent="." unique_id=1705922646]
+tile_set = ExtResource("1_vonaj")
+
+[node name="PogoSurfaces" type="TileMapLayer" parent="." unique_id=990813178]
+tile_set = ExtResource("1_vonaj")
+
+[node name="Spawn" type="Marker2D" parent="." unique_id=508793510]
+position = Vector2(23, 286)
+
+[node name="EntryPortal" type="Node2D" parent="." unique_id=1263566633]
+
+[node name="A" type="Marker2D" parent="EntryPortal" unique_id=799879213]
+position = Vector2(4, 148)
+
+[node name="B" type="Marker2D" parent="EntryPortal" unique_id=671307576]
+position = Vector2(4, 228)
+
+[node name="ExitPortal" type="Node2D" parent="." unique_id=1712498859]
+
+[node name="A" type="Marker2D" parent="ExitPortal" unique_id=1625216160]
+position = Vector2(300, 60)
+
+[node name="B" type="Marker2D" parent="ExitPortal" unique_id=1217608993]
+position = Vector2(300, 140)
+
+[node name="Props" type="Node2D" parent="." unique_id=91987592]
+
+[node name="Windmill" parent="Props" unique_id=45527476 instance=ExtResource("2_i8wlg")]
+position = Vector2(208, 224)
+
+[node name="SpinMotion" parent="Props/Windmill" index="0"]
+radius = 128.0
+turns_per_second = 0.4
+
+[node name="Block" parent="Props/Windmill" unique_id=1603719856 instance=ExtResource("3_i01fh")]
+size = Vector2(32, 16)
+
+[node name="Block2" parent="Props/Windmill" unique_id=1927287255 instance=ExtResource("3_i01fh")]
+size = Vector2(32, 16)
+
+[node name="Block3" parent="Props/Windmill" unique_id=1795870822 instance=ExtResource("3_i01fh")]
+size = Vector2(32, 16)
+
+[node name="Actors" type="Node2D" parent="." unique_id=1069528789]
+
+[editable path="Props/Windmill"]
+[editable path="Props/Windmill/Block"]
+[editable path="Props/Windmill/Block2"]
+[editable path="Props/Windmill/Block3"]

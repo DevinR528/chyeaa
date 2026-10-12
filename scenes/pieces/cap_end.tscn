@@ -1,0 +1,41 @@
+[gd_scene format=4]
+
+[ext_resource type="TileSet" path="res://resources/tiles/kind_tiles.tres" id="1_qvnan"]
+
+[node name="CapEnd" type="Node2D" unique_id=525378315]
+
+[node name="Terrain" type="TileMapLayer" parent="." unique_id=1214485194]
+tile_map_data = PackedByteArray("AAABAAAAAAAAAAAAAAACAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAGAAAAAAAAAAAAAAAHAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAJAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAALAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAANAAAAAAAAAAAAAAAOAAAAAAAAAAAAAAAPAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAFAA8AAAAAAAAAAAAGAA8AAAAAAAAAAAAHAA8AAAAAAAAAAAAIAA8AAAAAAAAAAAAJAA8AAAAAAAAAAAAOAA8AAAAAAAAAAAAPAA8AAAAAAAAAAAABABAAAAAAAAAAAAACABAAAAAAAAAAAAADABAAAAAAAAAAAAAEABAAAAAAAAAAAAAFABAAAAAAAAAAAAAGABAAAAAAAAAAAAAHABAAAAAAAAAAAAAIABAAAAAAAAAAAAAJABAAAAAAAAAAAAAKABAAAAAAAAAAAAALABAAAAAAAAAAAAAMABAAAAAAAAAAAAANABAAAAAAAAAAAAAOABAAAAAAAAAAAAAPABAAAAAAAAAAAAAQABAAAAAAAAAAAAANAA4AAAADAAAAAAAOAA4AAAADAAAAAAAPAA4AAAADAAAAAAAQAA4AAAADAAAAAAANAA8AAAADAAAAAAAQAA8AAAADAAAAAAA=")
+tile_set = ExtResource("1_qvnan")
+
+[node name="BlockTerrain" type="TileMapLayer" parent="." unique_id=1081151686]
+tile_set = ExtResource("1_qvnan")
+
+[node name="GrappleSurfaces" type="TileMapLayer" parent="." unique_id=1592590967]
+tile_set = ExtResource("1_qvnan")
+
+[node name="PogoSurfaces" type="TileMapLayer" parent="." unique_id=1411644375]
+tile_set = ExtResource("1_qvnan")
+
+[node name="Spawn" type="Marker2D" parent="." unique_id=1304451992]
+position = Vector2(44, 67)
+
+[node name="EntryPortal" type="Node2D" parent="." unique_id=682932423]
+
+[node name="A" type="Marker2D" parent="EntryPortal" unique_id=1252541319]
+position = Vector2(4, 4)
+
+[node name="B" type="Marker2D" parent="EntryPortal" unique_id=418608868]
+position = Vector2(4, 132)
+
+[node name="ExitPortal" type="Node2D" parent="." unique_id=1851579136]
+
+[node name="A" type="Marker2D" parent="ExitPortal" unique_id=999899646]
+position = Vector2(140, 4)
+
+[node name="B" type="Marker2D" parent="ExitPortal" unique_id=2037227507]
+position = Vector2(140, 132)
+
+[node name="Props" type="Node2D" parent="." unique_id=1724363484]
+
+[node name="Actors" type="Node2D" parent="." unique_id=825579414]

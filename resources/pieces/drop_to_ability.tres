@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/drop_to_ability.tscn" id="1_42fet"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_wrj0b"]
+
+[resource]
+script = ExtResource("2_wrj0b")
+piece_id = &"drop_to_ability"
+source_hash = "1:fdc7f88a313978d0c59f09258f3e919f28d02d3c6b33f4de752d7c263162e541"
+cols = 63
+rows = 39
+difficulty = 5
+tags = Array[StringName]([&"from_selection"])
+entry_a = Vector2i(0, 3)
+entry_b = Vector2i(0, 14)
+exit_a = Vector2i(62, 15)
+exit_b = Vector2i(62, 26)
+spawn_feet = Vector2(86, 77)
+scene = ExtResource("1_42fet")

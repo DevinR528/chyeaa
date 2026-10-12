@@ -132,7 +132,7 @@ func _on_restarted(reason: RoomRunner.RestartReason) -> void:
 		_play_one_shot(&"death", death_stream, 0.6)
 
 
-func _on_side_bashed() -> void:
+func _on_side_bashed(_direction: float) -> void:
 	_play_one_shot(&"bash", bash_stream, 0.7)
 
 

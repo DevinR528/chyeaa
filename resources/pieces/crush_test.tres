@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/crush_test.tscn" id="1_6qyyu"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_x53y2"]
+
+[resource]
+script = ExtResource("2_x53y2")
+piece_id = &"crush_test"
+source_hash = "1:8cabd8e6a15651bba121928ac30c3eecc7fc85c769c1d0940b5ea0dee53d7762"
+cols = 49
+rows = 48
+entry_a = Vector2i(0, 25)
+entry_b = Vector2i(0, 36)
+exit_a = Vector2i(48, 17)
+exit_b = Vector2i(48, 29)
+spawn_feet = Vector2(23, 286)
+scene = ExtResource("1_6qyyu")

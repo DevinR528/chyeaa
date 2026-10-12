@@ -1,0 +1,41 @@
+[gd_scene format=4]
+
+[ext_resource type="TileSet" path="res://resources/tiles/kind_tiles.tres" id="1_1ue82"]
+
+[node name="CapStart" type="Node2D" unique_id=1511405270]
+
+[node name="Terrain" type="TileMapLayer" parent="." unique_id=720583907]
+tile_map_data = PackedByteArray("AAABAAAAAAAAAAAAAAACAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAGAAAAAAAAAAAAAAAHAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAJAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAALAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAANAAAAAAAAAAAAAAAOAAAAAAAAAAAAAAABAAwAAAAAAAAAAAACAAwAAAAAAAAAAAADAAwAAAAAAAAAAAAEAAwAAAAAAAAAAAAFAAwAAAAAAAAAAAAGAAwAAAAAAAAAAAAHAAwAAAAAAAAAAAAIAAwAAAAAAAAAAAAJAAwAAAAAAAAAAAAKAAwAAAAAAAAAAAALAAwAAAAAAAAAAAAMAAwAAAAAAAAAAAANAAwAAAAAAAAAAAAOAAwAAAAAAAAAAAA=")
+tile_set = ExtResource("1_1ue82")
+
+[node name="BlockTerrain" type="TileMapLayer" parent="." unique_id=1174057041]
+tile_set = ExtResource("1_1ue82")
+
+[node name="GrappleSurfaces" type="TileMapLayer" parent="." unique_id=1311872505]
+tile_set = ExtResource("1_1ue82")
+
+[node name="PogoSurfaces" type="TileMapLayer" parent="." unique_id=1349165482]
+tile_set = ExtResource("1_1ue82")
+
+[node name="Spawn" type="Marker2D" parent="." unique_id=1357070567]
+position = Vector2(41, 79)
+
+[node name="EntryPortal" type="Node2D" parent="." unique_id=1549640523]
+
+[node name="A" type="Marker2D" parent="EntryPortal" unique_id=890609312]
+position = Vector2(4, 4)
+
+[node name="B" type="Marker2D" parent="EntryPortal" unique_id=1034012125]
+position = Vector2(4, 100)
+
+[node name="ExitPortal" type="Node2D" parent="." unique_id=1667523727]
+
+[node name="A" type="Marker2D" parent="ExitPortal" unique_id=274262665]
+position = Vector2(124, 4)
+
+[node name="B" type="Marker2D" parent="ExitPortal" unique_id=931112240]
+position = Vector2(124, 100)
+
+[node name="Props" type="Node2D" parent="." unique_id=2137711845]
+
+[node name="Actors" type="Node2D" parent="." unique_id=383576414]

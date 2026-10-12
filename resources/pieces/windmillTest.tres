@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/windmillTest.tscn" id="1_66qhk"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_f13ek"]
+
+[resource]
+script = ExtResource("2_f13ek")
+piece_id = &"windmillTest"
+source_hash = "1:a7505fd287da523336f3b141fdfb3ace5a192affd63f215b02ea82ef97f6d65e"
+cols = 38
+rows = 31
+entry_a = Vector2i(0, 18)
+entry_b = Vector2i(0, 28)
+exit_a = Vector2i(37, 7)
+exit_b = Vector2i(37, 17)
+spawn_feet = Vector2(23, 222)
+scene = ExtResource("1_66qhk")

@@ -37,6 +37,9 @@ const _TILE_MASK := PhysicsLayers.WORLD | PhysicsLayers.HAZARD | PhysicsLayers.E
 var _reach_by_tile_set := {}
 var _switches_by_id: Dictionary = {}
 
+## Optional generated-room bounds. Authored rooms derive their extent from tiles.
+@export var extent_cells := Rect2i()
+
 @onready var terrain: TileMapLayer = $Terrain
 @onready var block_terrain: TileMapLayer = $BlockTerrain
 @onready var grapple_surfaces: TileMapLayer = $GrappleSurfaces
@@ -51,6 +54,12 @@ func _ready() -> void:
 
 ## World-space room extent, taken from both terrain layers so it never drifts from the tiles.
 func pixel_rect() -> Rect2:
+	if extent_cells.has_area():
+		var tile := Vector2(terrain.tile_set.tile_size)
+		return Rect2(
+			terrain.global_position + Vector2(extent_cells.position) * tile,
+			Vector2(extent_cells.size) * tile,
+		)
 	var rect := Rect2()
 	for layer: TileMapLayer in [terrain, block_terrain]:
 		if layer.tile_set == null:

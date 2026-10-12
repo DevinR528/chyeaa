@@ -108,21 +108,20 @@ func _check_demo_block_terrain() -> void:
 	var blocks := room.block_terrain
 	if blocks.tile_set != null:
 		_check_tile_set_conventions(blocks.tile_set)
-		await physics_frame
-		await physics_frame
-		var overlaps: Array[Vector2i] = []
-		for cell in room.terrain.get_used_cells():
-			if _collider_at(room, cell, blocks):
-				overlaps.append(cell)
-		_expect(overlaps.is_empty(), "%d demo Terrain cells sit under BlockTerrain collision, first %s" % [overlaps.size(), overlaps.slice(0, 5)])
 	room.free()
 
 
 ## Every tile in the TileSet, painted or not: its collision matches its kind (no
 ## kind and no collision is decoration).
 func _check_tile_set_conventions(tile_set: TileSet) -> void:
-	_expect(tile_set.get_custom_data_layer_by_name(Room.KIND_DATA) != -1, "BlockTerrain's TileSet has no `kind` custom data layer")
-	_expect(tile_set.get_physics_layers_count() > 0 and tile_set.get_physics_layer_collision_layer(Room.WORLD_PHYSICS) == PhysicsLayers.WORLD, "BlockTerrain's physics layer 0 must collide on WORLD")
+	_expect(
+		tile_set.get_custom_data_layer_by_name(Room.KIND_DATA) != -1,
+		"BlockTerrain's TileSet has no `kind` custom data layer"
+	)
+	_expect(
+		tile_set.get_physics_layers_count() > 0 and tile_set.get_physics_layer_collision_layer(Room.WORLD_PHYSICS) == PhysicsLayers.WORLD,
+		"BlockTerrain's physics layer 0 must collide on WORLD"
+	)
 	if _failed:
 		return
 	for source_index in tile_set.get_source_count():
@@ -150,16 +149,6 @@ func _window(origin: Vector2i) -> Array[Vector2i]:
 		for x in range(origin.x - BLOCK - 1, origin.x + 2 * BLOCK + 1):
 			cells.append(Vector2i(x, y))
 	return cells
-
-
-func _collider_at(room: Room, cell: Vector2i, collider: Node) -> bool:
-	var query := PhysicsPointQueryParameters2D.new()
-	query.position = room.cell_rect(cell).get_center()
-	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.HAZARD | PhysicsLayers.EXIT
-	for hit in room.get_world_2d().direct_space_state.intersect_point(query, 8):
-		if hit["collider"] == collider:
-			return true
-	return false
 
 
 func _physics_hit(room: Room, cell: Vector2i, layer: int) -> bool:

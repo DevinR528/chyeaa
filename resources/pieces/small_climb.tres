@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/small_climb.tscn" id="1_pfve3"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_mw7up"]
+
+[resource]
+script = ExtResource("2_mw7up")
+piece_id = &"small_climb"
+source_hash = "1:d5b61e23db10307a40c873e081ad647ea66c21348401bdf3ebe419da695ca98b"
+cols = 72
+rows = 37
+difficulty = 2
+tags = Array[StringName]([&"from_selection"])
+entry_a = Vector2i(0, 21)
+entry_b = Vector2i(0, 32)
+exit_a = Vector2i(71, 3)
+exit_b = Vector2i(71, 14)
+spawn_feet = Vector2(27, 216)
+scene = ExtResource("1_pfve3")

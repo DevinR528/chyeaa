@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PieceLibrary" format=3]
+
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="1_fdrgs"]
+[ext_resource type="Resource" path="res://resources/pieces/cap_end.tres" id="2_isr8i"]
+[ext_resource type="Resource" path="res://resources/pieces/cap_start.tres" id="3_fdvnh"]
+[ext_resource type="Resource" path="res://resources/pieces/crush_test.tres" id="4_yeqa0"]
+[ext_resource type="Resource" path="res://resources/pieces/down_and_up.tres" id="5_x25cb"]
+[ext_resource type="Resource" path="res://resources/pieces/drop_to_ability.tres" id="6_711h4"]
+[ext_resource type="Resource" path="res://resources/pieces/long_gap.tres" id="7_oktxi"]
+[ext_resource type="Resource" path="res://resources/pieces/moving_plat.tres" id="8_svqvv"]
+[ext_resource type="Resource" path="res://resources/pieces/on_off_gate.tres" id="9_5uakq"]
+[ext_resource type="Resource" path="res://resources/pieces/pogo_tunnel.tres" id="10_v4cie"]
+[ext_resource type="Resource" path="res://resources/pieces/small_climb.tres" id="11_wecxb"]
+[ext_resource type="Resource" path="res://resources/pieces/windmillTest.tres" id="12_mki7e"]
+[ext_resource type="Resource" path="res://resources/pieces/windmillTest_copy.tres" id="13_scu6i"]
+[ext_resource type="Script" path="res://src/pieces/piece_library.gd" id="14_d6sbb"]
+
+[resource]
+script = ExtResource("14_d6sbb")
+pieces = Array[ExtResource("1_fdrgs")]([ExtResource("2_isr8i"), ExtResource("3_fdvnh"), ExtResource("4_yeqa0"), ExtResource("5_x25cb"), ExtResource("6_711h4"), ExtResource("7_oktxi"), ExtResource("8_svqvv"), ExtResource("9_5uakq"), ExtResource("10_v4cie"), ExtResource("11_wecxb"), ExtResource("12_mki7e"), ExtResource("13_scu6i")])

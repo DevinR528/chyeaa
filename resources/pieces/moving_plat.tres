@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/moving_plat.tscn" id="1_4qtsm"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_oaitr"]
+
+[resource]
+script = ExtResource("2_oaitr")
+piece_id = &"moving_plat"
+source_hash = "1:bb3baaaa84f11ee667a0ed8afda098632dbe057f20a7aebfbf39ece8a8658d7f"
+cols = 70
+rows = 38
+difficulty = 3
+tags = Array[StringName]([&"from_selection"])
+entry_a = Vector2i(0, 16)
+entry_b = Vector2i(0, 27)
+exit_a = Vector2i(69, 16)
+exit_b = Vector2i(69, 27)
+spawn_feet = Vector2(76, 99)
+scene = ExtResource("1_4qtsm")

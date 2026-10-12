@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/pogo_tunnel.tscn" id="1_k4x7x"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_5u5ut"]
+
+[resource]
+script = ExtResource("2_5u5ut")
+piece_id = &"pogo_tunnel"
+source_hash = "1:41ec28fb5ee463e37d096f038b62552ab687aa605b69869f1802e49c7045d840"
+cols = 84
+rows = 34
+difficulty = 4
+tags = Array[StringName]([&"from_selection"])
+entry_a = Vector2i(83, 21)
+entry_b = Vector2i(83, 32)
+entry_facing = 1
+exit_a = Vector2i(0, 21)
+exit_b = Vector2i(0, 32)
+exit_facing = 0
+spawn_feet = Vector2(38, 204)
+scene = ExtResource("1_k4x7x")

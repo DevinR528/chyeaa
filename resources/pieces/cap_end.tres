@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/cap_end.tscn" id="1_h1kka"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_p46ar"]
+
+[resource]
+script = ExtResource("2_p46ar")
+piece_id = &"cap_end"
+source_hash = "1:b267451c363db4d87d2e6b44b7b86640f20e973d738029b3cfc8cb49c35c337e"
+cols = 18
+rows = 17
+tags = Array[StringName]([&"cap_end"])
+entry_b = Vector2i(0, 16)
+exit_a = Vector2i(17, 0)
+exit_b = Vector2i(17, 16)
+spawn_feet = Vector2(44, 67)
+scene = ExtResource("1_h1kka")

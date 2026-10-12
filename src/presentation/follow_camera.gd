@@ -5,10 +5,28 @@ extends Camera2D
 
 @export var target: Node2D
 
+var shake := ScreenShake.new()
+
 
 func _physics_process(_delta: float) -> void:
 	if target != null:
 		global_position = target.global_position
+
+
+func _process(delta: float) -> void:
+	shake.tick(delta)
+	# Moving the camera right shifts the frame left, hence the sign inversion.
+	# Requests are screen pixels while Camera2D offset is in world units.
+	offset = -shake.offset / zoom
+
+
+func request_shake(seconds: float, amplitude: float, frequency := ScreenShake.DEFAULT_FREQUENCY, direction := Vector2.ZERO) -> void:
+	shake.request(seconds, amplitude, frequency, direction)
+
+
+func clear_shake() -> void:
+	shake.clear()
+	offset = Vector2.ZERO
 
 
 func frame_room(rect: Rect2) -> void:

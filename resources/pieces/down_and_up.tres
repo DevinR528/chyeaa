@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/down_and_up.tscn" id="1_8ct6j"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_sqc38"]
+
+[resource]
+script = ExtResource("2_sqc38")
+piece_id = &"down_and_up"
+source_hash = "1:972cf540a99982ae27137884b8492ebd2e515ae87880d9b3b08040f955771d57"
+cols = 73
+rows = 66
+difficulty = 4
+tags = Array[StringName]([&"from_selection"])
+entry_a = Vector2i(0, 8)
+entry_b = Vector2i(0, 19)
+exit_a = Vector2i(72, 0)
+exit_b = Vector2i(72, 11)
+spawn_feet = Vector2(68, 162)
+scene = ExtResource("1_8ct6j")

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/on_off_gate.tscn" id="1_524j4"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_8t4fn"]
+
+[resource]
+script = ExtResource("2_8t4fn")
+piece_id = &"on_off_gate"
+source_hash = "1:dfbd32af059b37b80c7872fed9b468e7c5f15efb80f43b07edf51c3593cfe8ea"
+cols = 138
+rows = 104
+difficulty = 3
+tags = Array[StringName]([&"2 on/off switch room"])
+entry_a = Vector2i(0, 73)
+entry_b = Vector2i(0, 84)
+exit_a = Vector2i(0, 90)
+exit_b = Vector2i(0, 101)
+exit_facing = 0
+spawn_feet = Vector2(25, 631)
+scene = ExtResource("1_524j4")

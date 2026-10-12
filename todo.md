@@ -10,6 +10,8 @@ Next safe parallel wave:
 
 - [x] AnimationPlayer plus Pogo stride (Task 1).
 - [x] Switch/gate/power, fall block, and track audit (Task 3).
+- [x] Piece import and runtime stitching (Task 4).
+- [x] Screen shake and vignette (Task 5).
 - [ ] Pure run-build and stat stacking model (Task 6A).
 
 ## Use groups for room-wide broadcasts

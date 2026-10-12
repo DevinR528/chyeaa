@@ -34,6 +34,7 @@ var hitstop_left := 0.0
 ## The request tick itself does not count down, so a hitstop freezes its full length.
 var _hitstop_requested_this_tick := false
 var _pending_restart := NO_RESTART
+var _pending_shakes: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -63,6 +64,7 @@ func switch_character(index: int) -> void:
 	player.name = &"Player"
 	player.room = room
 	player.hitstop_requested.connect(_on_hitstop_requested)
+	player.screen_shake_requested.connect(_on_screen_shake_requested)
 	player.trigger_touched.connect(_on_trigger_touched)
 	player.crushed.connect(_queue_restart.bind(RestartReason.DEATH))
 	player.hurt.connect(_queue_restart.bind(RestartReason.DEATH).unbind(1))
@@ -83,6 +85,8 @@ func _respawn() -> void:
 	hitstop_left = 0.0
 	_hitstop_requested_this_tick = false
 	_pending_restart = NO_RESTART
+	_pending_shakes.clear()
+	camera.clear_shake()
 	room.freeze_entities(false)
 	room.reset_entities()
 	player.respawn(room.spawn_feet())
@@ -90,10 +94,13 @@ func _respawn() -> void:
 
 
 func _tick_hitstop(delta: float) -> void:
+	var was_active := hitstop_left > 0.0
 	if _hitstop_requested_this_tick:
 		_hitstop_requested_this_tick = false
 	elif hitstop_left > 0.0:
 		hitstop_left = maxf(0.0, hitstop_left - delta)
+	if was_active and hitstop_left <= 0.0:
+		_release_pending_shakes()
 	var frozen := hitstop_left > 0.0
 	if frozen != player.frozen:
 		player.frozen = frozen
@@ -104,6 +111,34 @@ func _on_hitstop_requested(seconds: float) -> void:
 	if seconds > hitstop_left:
 		hitstop_left = seconds
 		_hitstop_requested_this_tick = true
+
+
+func _on_screen_shake_requested(
+	seconds: float,
+	amplitude: float,
+	frequency: float,
+	direction: Vector2,
+) -> void:
+	if hitstop_left <= 0.0:
+		camera.request_shake(seconds, amplitude, frequency, direction)
+		return
+	_pending_shakes.append({
+		"seconds": seconds,
+		"amplitude": amplitude,
+		"frequency": frequency,
+		"direction": direction,
+	})
+
+
+func _release_pending_shakes() -> void:
+	for request in _pending_shakes:
+		camera.request_shake(
+			request.seconds,
+			request.amplitude,
+			request.frequency,
+			request.direction,
+		)
+	_pending_shakes.clear()
 
 
 func _on_trigger_touched(layer: int) -> void:

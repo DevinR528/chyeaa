@@ -7,6 +7,8 @@ signal jumped
 signal landed(fall_duration: float)
 ## The whole sim should freeze; the room runner owns the countdown.
 signal hitstop_requested(seconds: float)
+## Presentation request. The runner delays it until active hitstop releases.
+signal screen_shake_requested(seconds: float, amplitude: float, frequency: float, direction: Vector2)
 ## The touch sensor entered a room trigger. `layer` is one of TRIGGER_LAYERS' bits.
 signal trigger_touched(layer: int)
 ## Pinned between two solids, such as a moving prop against a wall.
@@ -183,6 +185,10 @@ func refresh_dash() -> void:
 
 func request_hitstop(seconds: float) -> void:
 	hitstop_requested.emit(seconds)
+
+
+func request_screen_shake(seconds: float, amplitude: float, frequency: float, direction := Vector2.ZERO) -> void:
+	screen_shake_requested.emit(seconds, amplitude, frequency, direction)
 
 
 func stomp_bounce_velocity(base_velocity: float, jump_held: bool) -> float:

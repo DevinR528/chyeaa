@@ -5,7 +5,7 @@ extends PlayerAbility
 
 signal strike_started(direction: StrikeDirection)
 ## A side strike connected and launched the player away from the surface.
-signal side_bashed
+signal side_bashed(direction: float)
 
 enum State {
 	## Not striking; locomotion is in control.
@@ -52,6 +52,9 @@ const TILE := MovementStats.TILE
 ## Held horizontal input is ignored this long after a side pop.
 @export_range(0.0, 0.5, 0.005) var side_lock := 0.08
 @export_range(0.0, 0.3, 0.005) var side_hitstop := 0.1
+@export_range(0.0, 1.0, 0.01) var side_shake_seconds := 0.18
+@export_range(0.0, 16.0, 0.5) var side_shake_amplitude := 4.0
+@export_range(0.0, 60.0, 1.0) var side_shake_frequency := 24.0
 
 var state := State.INACTIVE
 var strike_direction := StrikeDirection.DOWN
@@ -235,7 +238,13 @@ func _side_pop(side: float) -> void:
 	body.velocity.x = -side * side_recoil
 	side_lock_left = side_lock
 	body.request_hitstop(side_hitstop)
-	side_bashed.emit()
+	body.request_screen_shake(
+		side_shake_seconds,
+		side_shake_amplitude,
+		side_shake_frequency,
+		Vector2(side, 0.0),
+	)
+	side_bashed.emit(side)
 
 
 func _bonk_ceiling() -> void:

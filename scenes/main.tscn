@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://pr8vmchbv4e1" path="res://src/debug/reach_overlay.gd" id="7_reach"]
 [ext_resource type="PackedScene" uid="uid://cbfqdxl45bu0a" path="res://scenes/backgrounds/eroded_earth.tscn" id="8_backdrop"]
 [ext_resource type="PackedScene" path="res://scenes/presentation/game_audio.tscn" id="9_audio"]
+[ext_resource type="PackedScene" path="res://scenes/presentation/vignette.tscn" id="10_vignette"]
 
 [node name="Main" type="Node2D" unique_id=36488909 node_paths=PackedStringArray("room", "camera", "backdrop", "audio")]
 process_physics_priority = -10
@@ -44,3 +45,7 @@ script = ExtResource("7_reach")
 runner = NodePath("..")
 
 [node name="GameAudio" parent="." instance=ExtResource("9_audio")]
+
+[node name="Vignette" parent="." node_paths=PackedStringArray("runner", "camera") instance=ExtResource("10_vignette")]
+runner = NodePath("..")
+camera = NodePath("../Camera")

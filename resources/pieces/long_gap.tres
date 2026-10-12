@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/long_gap.tscn" id="1_2rukf"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_4yq6q"]
+
+[resource]
+script = ExtResource("2_4yq6q")
+piece_id = &"long_gap"
+source_hash = "1:af47d142b7bb1db6adc13164dadfde3a67326a9f4a6db8b3af208ea91602f500"
+cols = 115
+rows = 16
+difficulty = 4
+entry_a = Vector2i(0, 2)
+entry_b = Vector2i(0, 13)
+exit_a = Vector2i(114, 2)
+exit_b = Vector2i(114, 13)
+spawn_feet = Vector2(177, 108)
+scene = ExtResource("1_2rukf")

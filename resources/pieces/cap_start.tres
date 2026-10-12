@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pieces/cap_start.tscn" id="1_kim7n"]
+[ext_resource type="Script" path="res://src/pieces/piece_data.gd" id="2_wr1th"]
+
+[resource]
+script = ExtResource("2_wr1th")
+piece_id = &"cap_start"
+source_hash = "1:105a90c58cf1738ce9f77f41a84262654808a716285ef4a7b7922587774afda7"
+cols = 16
+rows = 14
+tags = Array[StringName]([&"cap_start"])
+entry_b = Vector2i(0, 12)
+exit_a = Vector2i(15, 0)
+exit_b = Vector2i(15, 12)
+spawn_feet = Vector2(41, 79)
+scene = ExtResource("1_kim7n")

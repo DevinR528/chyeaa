@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/vignette.gd" id="1_vignette"]
+[ext_resource type="Shader" path="res://assets/shaders/vignette.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
+shader = ExtResource("2_shader")
+
+[node name="Vignette" type="CanvasLayer"]
+layer = 20
+process_priority = 40
+script = ExtResource("1_vignette")
+
+[node name="Veil" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_vignette")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

@@ -13,7 +13,8 @@ Standard, Grappler, and Pogo.
 - `backgrounds/` — backdrop scenes: a `Backdrop` root with one `BackdropLayer`
   per plate, back to front. Plate effects are a `backdrop_plate.gdshader` material.
 - `presentation/` — `game_audio.tscn`, the pooled gameplay-sound listener
-  instanced by `main.tscn` and wired to its `RoomRunner`.
+  instanced by `main.tscn` and wired to its `RoomRunner`; `vignette.tscn`, the
+  player-centered screen-space veil.
 - `props/` — `block.tscn` is the base `TileProp`. `moving_platform.tscn`,
   `breakable.tscn`, `windmill.tscn`, `gate.tscn`, and `fall_block.tscn` inherit
   it with components already added. `switch.tscn` is the non-solid player
@@ -31,5 +32,8 @@ Standard, Grappler, and Pogo.
   the root, so no Editable Children is needed. Both process after props and
   before the player (physics priority 5).
 
-Planned folders: `pieces/`, `ui/`, and `dev/`. Scripts
-referenced by these scenes live under `res://src/`.
+- `pieces/` — generated placeholder-art scenes from the JavaScript piece editor.
+  Re-run `src/tools/import_pieces.gd`; do not hand-edit these outputs.
+
+Planned folders: `ui/` and `dev/`. Scripts referenced by these scenes live under
+`res://src/`.
