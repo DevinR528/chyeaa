@@ -2,12 +2,15 @@ class_name RoomRunner
 extends Node2D
 ## Plays one room with one character: spawn, character switching, hitstop, and
 ## restarts when the player's sensors report a fall, exit, hazard, or crush, or
-## the player is hurt by a walker or throwable. A restart also resets the room's
-## props and actors.
+## the player is hurt by a walker or throwable. Death and exit play out where the
+## body stopped, and the respawn or reward menu waits until that effect ends.
+## A restart also resets the room's props and actors.
 ## Runs its physics before the player: sensor signals from the last physics step
 ## arrive first, so a restart lands before the player moves again.
 
 signal restarted(reason: RestartReason)
+## Fired when a death, fall, or exit effect begins, before the delay.
+signal transition_started(reason: RestartReason)
 signal character_changed(index: int)
 
 ## Lower values win when several triggers are touched in one step.
@@ -44,9 +47,15 @@ var _pending_restart := NO_RESTART
 var _pending_shakes: Array[Dictionary] = []
 ## The restart that follows a reward pick must not open the menu again.
 var _exit_reward_chosen := false
+var _transition_reason := NO_RESTART
+var fx: RoomFx
 
 
 func _ready() -> void:
+	fx = RoomFx.new()
+	fx.name = &"RoomFx"
+	fx.z_index = 10
+	add_child(fx)
 	if reward_menu != null:
 		reward_menu.picked.connect(_on_reward_picked)
 	if backdrop != null:
@@ -60,8 +69,11 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed(&"next_character"):
 		switch_character((character_index + 1) % characters.size())
 		return
+	if fx.is_playing():
+		_tick_fx(delta)
+		return
 	if _pending_restart != NO_RESTART:
-		restart(_pending_restart)
+		_begin_transition(_pending_restart)
 		return
 	_tick_hitstop(delta)
 
@@ -149,6 +161,8 @@ func _on_reward_picked(id: RunBuild.Id) -> void:
 
 
 func _respawn() -> void:
+	fx.clear()
+	_transition_reason = NO_RESTART
 	hitstop_left = 0.0
 	_hitstop_requested_this_tick = false
 	_pending_restart = NO_RESTART
@@ -156,8 +170,45 @@ func _respawn() -> void:
 	camera.clear_shake()
 	room.freeze_entities(false)
 	room.reset_entities()
-	player.respawn(room.spawn_feet())
+	_set_player_alpha(1.0)
+	# Hold the next tick. Integrating the teleport keeps a dash's speed.
+	player.respawn(room.spawn_feet(), true)
 	camera.snap_to_target()
+
+
+func _begin_transition(reason: RestartReason) -> void:
+	_pending_restart = NO_RESTART
+	_transition_reason = reason
+	hitstop_left = 0.0
+	_hitstop_requested_this_tick = false
+	_pending_shakes.clear()
+	camera.clear_shake()
+	room.freeze_entities(false)
+	player.halt()
+	if reason == RestartReason.EXIT:
+		fx.start_exit(player)
+	else:
+		fx.start_death(player)
+	_set_player_alpha(fx.player_alpha())
+	transition_started.emit(reason)
+
+
+func _tick_fx(delta: float) -> void:
+	player.velocity = Vector2.ZERO
+	var done := fx.update(SimStep.delta(self, delta))
+	_set_player_alpha(fx.player_alpha())
+	if not done:
+		return
+	var reason := _transition_reason
+	_transition_reason = NO_RESTART
+	fx.clear()
+	restart(reason)
+
+
+func _set_player_alpha(alpha: float) -> void:
+	var tint := player.modulate
+	tint.a = alpha
+	player.modulate = tint
 
 
 func _tick_hitstop(delta: float) -> void:
@@ -218,5 +269,7 @@ func _on_trigger_touched(layer: int) -> void:
 
 
 func _queue_restart(reason: RestartReason) -> void:
+	if fx.is_playing() or _transition_reason != NO_RESTART:
+		return
 	if _pending_restart == NO_RESTART or reason < _pending_restart:
 		_pending_restart = reason

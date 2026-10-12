@@ -14,7 +14,8 @@ Standard, Grappler, and Pogo.
   per plate, back to front. Plate effects are a `backdrop_plate.gdshader` material.
 - `presentation/` — `game_audio.tscn`, the pooled gameplay-sound listener
   instanced by `main.tscn` and wired to its `RoomRunner`; `vignette.tscn`, the
-  player-centered screen-space veil.
+  player-centered screen-space veil. Death/exit particles and the dash trail are
+  created in code (`RoomFx`, `DashTrail`), not as scenes.
 - `props/` — `block.tscn` is the base `TileProp`. `moving_platform.tscn`,
   `breakable.tscn`, `windmill.tscn`, `gate.tscn`, and `fall_block.tscn` inherit
   it with components already added. `switch.tscn` is the non-solid player

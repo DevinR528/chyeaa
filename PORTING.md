@@ -82,7 +82,6 @@ recorded input.
 
 ### Left behind on purpose, or not a runtime port
 
-- Death and exit particles (`../src/level_manager/fx.ts`). Exit audio is ported.
 - The in-browser room, piece, and anim editor. Piece JSON still imports through
   `src/tools/import_pieces.gd`.
 - The debug tuning panel and sim-speed slider. Use the inspector.

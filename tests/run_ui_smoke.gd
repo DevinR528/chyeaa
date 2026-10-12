@@ -120,8 +120,7 @@ func _check_room() -> void:
 
 	_restarts.clear()
 	runner.player.respawn(_cell_feet(room, Vector2i(8, 8)))
-	for _frame in 4:
-		await physics_frame
+	await _await_restart()
 	_expect(_restarts.has(RoomRunner.RestartReason.DEATH), "death tile did not restart, got %s" % [_restarts])
 	_expect(
 		runner.player.global_position.distance_to(Vector2(planted.x, planted.y - runner.player.body_rect().size.y / 2.0)) < 8.0,
@@ -130,15 +129,13 @@ func _check_room() -> void:
 
 	_restarts.clear()
 	runner.player.respawn(Vector2(planted.x, room.kill_plane_y() + 64.0))
-	for _frame in 4:
-		await physics_frame
+	await _await_restart()
 	_expect(_restarts.has(RoomRunner.RestartReason.FALL), "falling off did not restart, got %s" % [_restarts])
 	_expect(room.spawn_feet() == planted, "a fall cleared the checkpoint")
 
 	_restarts.clear()
 	runner.player.respawn(_cell_feet(room, Vector2i(12, 8)))
-	for _frame in 4:
-		await physics_frame
+	await _await_restart()
 	_expect(_restarts.has(RoomRunner.RestartReason.EXIT), "exit tile did not restart, got %s" % [_restarts])
 	_expect(not room.checkpoint is Vector2, "exit kept the planted checkpoint")
 	_expect(
@@ -211,6 +208,14 @@ func _picker_text(ui: RunUI) -> String:
 		if child is Label:
 			text += (child as Label).text
 	return text
+
+
+func _await_restart() -> void:
+	var frames := ceili(RoomFx.EXIT_DURATION * Engine.physics_ticks_per_second) + 8
+	for _frame in frames:
+		await physics_frame
+		if not _restarts.is_empty():
+			return
 
 
 func _expect(condition: bool, message: String) -> void:

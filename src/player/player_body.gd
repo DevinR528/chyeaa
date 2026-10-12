@@ -82,6 +82,9 @@ var contact_box: ContactBox
 
 var _stomp_target: RoomActor
 var _stomp_surface_y := 0.0
+var dash_trail: DashTrail
+## Set by a teleporting respawn so the next tick does not integrate the move.
+var _ignore_motion_this_tick := false
 
 @onready var player_input: PlayerInput = get_node(input_path)
 @onready var body_shape: CollisionShape2D = $CollisionShape2D
@@ -102,10 +105,20 @@ func _ready() -> void:
 			crushed.emit())
 	contact_box = ContactBox.attach(self, (body_shape.shape as RectangleShape2D).size, body_shape.position)
 	contact_box.touched.connect(_on_contact_touched)
+	dash_trail = DashTrail.new()
+	dash_trail.name = &"DashTrail"
+	add_child(dash_trail)
 
 
 func _physics_process(delta: float) -> void:
 	if frozen:
+		return
+	if _ignore_motion_this_tick:
+		# The teleport already happened. Integrating this tick would treat that
+		# move, or a dash still in the body, as velocity.
+		_ignore_motion_this_tick = false
+		velocity = Vector2.ZERO
+		_clear_server_velocity()
 		return
 	var sim_delta := SimStep.delta(self, delta)
 	_apply_stomp()
@@ -143,10 +156,13 @@ func body_rect() -> Rect2:
 
 
 ## Places the body standing on `feet`, so characters of any height spawn grounded.
-func respawn(feet: Vector2) -> void:
+## `hold_motion` skips the following tick. A death or exit respawn uses it so the
+## teleport is not integrated as leftover dash speed.
+func respawn(feet: Vector2, hold_motion := false) -> void:
 	var rect := body_rect()
 	global_position = feet - Vector2(rect.get_center().x - global_position.x, rect.end.y - global_position.y)
 	velocity = Vector2.ZERO
+	_clear_server_velocity()
 	frozen = false
 	facing = 1.0
 	move_state = MovementState.FALL
@@ -166,7 +182,30 @@ func respawn(feet: Vector2) -> void:
 	carrier.reset()
 	if ability != null:
 		ability.reset()
+	if dash_trail != null:
+		dash_trail.clear()
+	force_update_transform()
 	reset_physics_interpolation()
+	_ignore_motion_this_tick = hold_motion
+
+
+## Stops a dash where the body is. Death and exit do this before their effect,
+## so the later respawn is not still carrying that speed.
+func halt() -> void:
+	velocity = Vector2.ZERO
+	_clear_server_velocity()
+	dash_time_left = 0.0
+	dash_velocity_x = 0.0
+	if move_state == MovementState.DASH:
+		move_state = MovementState.FALL
+	frozen = true
+	_stomp_target = null
+	if dash_trail != null:
+		dash_trail.clear()
+
+
+func _clear_server_velocity() -> void:
+	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_LINEAR_VELOCITY, Vector2.ZERO)
 
 
 func apply_jump(
@@ -309,6 +348,8 @@ func _try_dash(input_frame: PlayerInputFrame) -> void:
 	dash_velocity_x = velocity.x * stats.dash_air_momentum + direction * stats.dash_speed
 	velocity = Vector2(dash_velocity_x, 0.0)
 	dashed.emit(direction)
+	if dash_trail != null:
+		dash_trail.begin(body_rect().position)
 
 
 func _update_motion(
@@ -366,6 +407,8 @@ func _finish_tick(was_on_floor: bool, input_frame: PlayerInputFrame, sim_delta: 
 	carrier.update(input_frame)
 	if move_state != MovementState.DASH:
 		move_state = _read_move_state()
+	if dash_trail != null:
+		dash_trail.tick(sim_delta, move_state == MovementState.DASH, body_rect().position)
 
 
 func _update_contacts(was_on_floor: bool, sim_delta: float) -> void:

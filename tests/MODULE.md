@@ -40,6 +40,8 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   character switch, with device playback disabled.
 - `presentation_smoke.gd` — quadratic screen-shake decay/replacement/direction,
   vignette screen coordinates and radii, and Pogo shake beginning after hitstop.
+- `fx_smoke.gd` — death and exit effects delay the respawn and the reward menu,
+  a dash does not keep its speed through that respawn, and the dash trail fades.
 - `pieces_smoke.gd` — imported scene structure, portal placement, flex corridors,
   overlap rejection, caps/budget/determinism, and a generated Room in RoomRunner.
 - `block_terrain_smoke.gd` — 32 px art tiles on 8 px cells (also flipped and

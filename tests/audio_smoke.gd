@@ -32,11 +32,11 @@ func _run() -> void:
 	_expect(quiet.volume == 0.0 and quiet.pitch == 1.28, "short landing options were not clamped")
 	_expect(loud.volume == 1.0 and loud.pitch == 0.78, "long landing options were not clamped")
 
-	main.restarted.emit(RoomRunner.RestartReason.DEATH)
+	main.transition_started.emit(RoomRunner.RestartReason.DEATH)
 	_expect_request(&"death", "bird_poo.wav", 0.6, 1.0)
-	main.restarted.emit(RoomRunner.RestartReason.FALL)
+	main.transition_started.emit(RoomRunner.RestartReason.FALL)
 	_expect_request(&"death", "bird_poo.wav", 0.6, 1.0)
-	main.restarted.emit(RoomRunner.RestartReason.EXIT)
+	main.transition_started.emit(RoomRunner.RestartReason.EXIT)
 	_expect_request(&"exit", "fanfare.ogg", 0.65, 1.0)
 
 	main.switch_character(2)

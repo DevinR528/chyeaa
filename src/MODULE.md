@@ -57,7 +57,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
   completed player, runner, Pogo, and animation facts to a one-shot pool and one
   replacing footstep voice. `ScreenShake` applies wall-time camera offset after
   Pogo hitstop; `Vignette` is a screen-space veil centered through the final
-  camera transform.
+  camera transform. `RoomFx` is the death shatter and exit confetti; the runner
+  waits out that effect before respawning or opening the reward menu. `DashTrail`
+  leaves fading body copies during a dash. Both draws are placeholder visuals.
 - `debug/` — game-specific runtime overlays and readouts. `ReachOverlay` draws
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
   `PlayReadout` is the same debug toggle: FPS, velocity, grounded, move and

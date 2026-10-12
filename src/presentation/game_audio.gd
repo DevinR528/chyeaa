@@ -57,15 +57,15 @@ func _exit_tree() -> void:
 
 func bind_runner(next_runner: RoomRunner) -> void:
 	if runner != null:
-		if runner.restarted.is_connected(_on_restarted):
-			runner.restarted.disconnect(_on_restarted)
+		if runner.transition_started.is_connected(_on_transition_started):
+			runner.transition_started.disconnect(_on_transition_started)
 		if runner.character_changed.is_connected(_on_character_changed):
 			runner.character_changed.disconnect(_on_character_changed)
 	_disconnect_player()
 	runner = next_runner
 	if runner == null:
 		return
-	runner.restarted.connect(_on_restarted)
+	runner.transition_started.connect(_on_transition_started)
 	runner.character_changed.connect(_on_character_changed)
 	if runner.player != null:
 		_connect_player(runner.player)
@@ -125,7 +125,7 @@ func _on_landed(airtime: float) -> void:
 	_play_one_shot(&"land", land_stream, options.volume, options.pitch)
 
 
-func _on_restarted(reason: RoomRunner.RestartReason) -> void:
+func _on_transition_started(reason: RoomRunner.RestartReason) -> void:
 	if reason == RoomRunner.RestartReason.EXIT:
 		_play_one_shot(&"exit", exit_stream, 0.65)
 	else:

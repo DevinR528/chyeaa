@@ -68,8 +68,7 @@ func _check_character_surfaces(main: RoomRunner) -> void:
 func _expect_restart_at(main: RoomRunner, feet: Vector2, reason: RoomRunner.RestartReason) -> void:
 	_restarts.clear()
 	main.player.respawn(feet)
-	for _frame in 4:
-		await physics_frame
+	await _wait_for_restart(reason)
 	_expect(_restarts.has(reason), "expected restart %s at %s, got %s" % [
 		RoomRunner.RestartReason.keys()[reason], feet, _restarts,
 	])
@@ -86,7 +85,8 @@ func _expect_exit_offers_a_power_up(main: RoomRunner, feet: Vector2) -> void:
 	for id: RunBuild.Id in RunBuild._ORDER:
 		before += main.build.stack_count(id)
 	main.player.respawn(feet)
-	for _frame in 8:
+	var frames := _effect_frames()
+	for _frame in frames:
 		await physics_frame
 		if main.reward_menu.open:
 			break
@@ -149,6 +149,17 @@ func _check_restart_resets_actors(main: RoomRunner) -> void:
 			_expect((actor as Walker).alive, "%s stayed dead after a restart" % actor.name)
 		elif actor is Throwable:
 			_expect((actor as Throwable).state == Throwable.State.IDLE, "%s was not idle after a restart" % actor.name)
+
+
+func _effect_frames() -> int:
+	return ceili(RoomFx.EXIT_DURATION * Engine.physics_ticks_per_second) + 8
+
+
+func _wait_for_restart(reason: RoomRunner.RestartReason) -> void:
+	for _frame in _effect_frames():
+		await physics_frame
+		if _restarts.has(reason):
+			return
 
 
 func _expect(condition: bool, message: String) -> void:
