@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://src/props/components/falling_behavior.gd" id="2_falling"]
+
+[node name="FallBlock" node_paths=PackedStringArray("falling") instance=ExtResource("1_block")]
+falling = NodePath("FallingBehavior")
+
+[node name="FallingBehavior" type="Node" parent="."]
+script = ExtResource("2_falling")

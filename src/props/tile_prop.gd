@@ -40,6 +40,8 @@ enum Solidity {
 @export var path: PathMotion
 @export var spin: SpinMotion
 @export var breakable: Breakable
+@export var power: Power
+@export var falling: FallingBehavior
 
 ## Set by the room when the current character cannot use this surface.
 var excluded := false
@@ -65,6 +67,8 @@ func _ready() -> void:
 		return
 	add_to_group(GROUP)
 	home = position
+	if power != null:
+		power.powered_changed.connect(_on_powered_changed)
 	reset()
 
 
@@ -74,9 +78,17 @@ func _physics_process(delta: float) -> void:
 	if frozen:
 		constant_linear_velocity = Vector2.ZERO
 		return
-	_place(delta)
+	var motion_delta := delta if power == null or power.motion_runs() else 0.0
+	if falling != null:
+		falling.tick(delta)
+		if falling.state == FallingBehavior.State.FALLING:
+			_fall(delta)
+		elif falling.state != FallingBehavior.State.LANDED:
+			_place(motion_delta)
+	else:
+		_place(motion_delta)
 	if spin != null:
-		spin.advance(delta)
+		spin.advance(motion_delta)
 		_place_carried()
 	_sync_physics_transform()
 	constant_linear_velocity = (global_position - _previous_global) / delta
@@ -90,7 +102,7 @@ func _physics_process(delta: float) -> void:
 
 ## Back to the authored start. Carriers reset before what they carry (tree order).
 func reset() -> void:
-	for component in [oscillation, path, spin, breakable]:
+	for component in [oscillation, path, spin, breakable, falling, power]:
 		if component != null:
 			component.reset()
 	_place(0.0)
@@ -104,7 +116,11 @@ func reset() -> void:
 
 
 func is_present() -> bool:
-	return not excluded and (breakable == null or breakable.is_present())
+	return (
+		not excluded
+		and (breakable == null or breakable.is_present())
+		and (power == null or power.is_present())
+	)
 
 
 func is_solid() -> bool:
@@ -131,6 +147,8 @@ func set_excluded(value: bool) -> void:
 func stood_on() -> void:
 	if breakable != null:
 		breakable.on_stood_on(surface)
+	if falling != null:
+		falling.arm(surface)
 
 
 ## An ability used this surface; `use` is GRAPPLE or POGO.
@@ -170,6 +188,26 @@ func _place(delta: float) -> void:
 	position = target
 
 
+func _fall(delta: float) -> void:
+	var next_top := falling.fall(delta, rect(), _fall_blocked)
+	global_position.y = next_top + size.y / 2.0
+
+
+func _fall_blocked(box: Rect2) -> bool:
+	var params := PhysicsShapeQueryParameters2D.new()
+	var probe := RectangleShape2D.new()
+	# Physics overlap queries count a flush edge as intersecting. A tiny inset
+	# lets the block settle exactly on a floor while still detecting penetration.
+	probe.size = box.size - Vector2.ONE * 0.02
+	params.shape = probe
+	params.transform = Transform2D(0.0, box.get_center())
+	params.collision_mask = PhysicsLayers.WORLD
+	params.collide_with_areas = false
+	params.collide_with_bodies = true
+	params.exclude = [get_rid()]
+	return not get_world_2d().direct_space_state.intersect_shape(params, 1).is_empty()
+
+
 ## Godot batches node transform changes and hands them to physics after every
 ## script has run, which would leave riders colliding with last tick's box.
 func _sync_physics_transform() -> void:
@@ -180,6 +218,11 @@ func _place_carried() -> void:
 	var arms := carried_props()
 	for index in arms.size():
 		arms[index].carry_offset = spin.offset_for(index, arms.size())
+
+
+func _on_powered_changed(_is_powered: bool) -> void:
+	_update_collision()
+	queue_redraw()
 
 
 ## Runtime only, so the editor and importer never save derived layers into scenes.
@@ -211,7 +254,7 @@ const ARMING_SHAKE_PX := 1.5
 
 
 func _process(_delta: float) -> void:
-	if breakable != null and not Engine.is_editor_hint():
+	if (breakable != null or falling != null) and not Engine.is_editor_hint():
 		queue_redraw()
 
 
@@ -223,17 +266,20 @@ func _draw() -> void:
 		return
 	var color: Color = SURFACE_COLORS[surface]
 	var box := Rect2(-size / 2.0, size)
-	if not in_editor and breakable != null and breakable.state == Breakable.State.ARMING:
-		var armed_for := breakable.delay - breakable.time_left
-		box.position.x += sin(armed_for * ARMING_SHAKE_RATE) * ARMING_SHAKE_PX
-		color.a *= ARMING_ALPHA
+	if not in_editor:
+		if breakable != null and breakable.state == Breakable.State.ARMING:
+			var armed_for := breakable.delay - breakable.time_left
+			box.position.x += sin(armed_for * ARMING_SHAKE_RATE) * ARMING_SHAKE_PX
+			color.a *= ARMING_ALPHA
+		elif falling != null:
+			box.position.x += falling.draw_offset_x()
 		
 	if is_solid():
 		draw_rect(box, color)
 	else:
 		draw_rect(box, Color(color, color.a * SOFT_FILL_ALPHA))
 		_draw_dashed_rim(box, Color(color, color.a * SOFT_RIM_ALPHA))
-	if breakable != null:
+	if breakable != null or falling != null:
 		_draw_hatch(box)
 
 

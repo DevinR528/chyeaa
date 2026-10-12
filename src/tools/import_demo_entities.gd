@@ -29,8 +29,13 @@ enum PrototypeKind {
 const PREFABS := {
 	PrototypeKind.MOVING_PLATFORM: preload("res://scenes/props/moving_platform.tscn"),
 	PrototypeKind.BREAKABLE: preload("res://scenes/props/breakable.tscn"),
+	PrototypeKind.SWITCH: preload("res://scenes/props/switch.tscn"),
+	PrototypeKind.GATE: preload("res://scenes/props/gate.tscn"),
+	PrototypeKind.FALL_BLOCK: preload("res://scenes/props/fall_block.tscn"),
 	PrototypeKind.WINDMILL: preload("res://scenes/props/windmill.tscn"),
 	PrototypeKind.BLOCK: preload("res://scenes/props/block.tscn"),
+	# Track is the prototype editor's name for a moving platform carrying a child.
+	PrototypeKind.TRACK: preload("res://scenes/props/moving_platform.tscn"),
 }
 
 ## Prototype `solid` field: 1 forces solid, 0 forces pass-through, anything else is the kind default.
@@ -85,8 +90,22 @@ func _add_entity(def: Dictionary, parent: Node, room: Node, is_root: bool, skipp
 	if not PREFABS.has(kind):
 		skipped[kind] = skipped.get(kind, 0) + 1
 		return 0
-	var prop := (PREFABS[kind] as PackedScene).instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE) as TileProp
+	var entity := (PREFABS[kind] as PackedScene).instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE)
 	var size := Vector2(def.w, def.h)
+	if entity is SwitchProp:
+		var room_switch := entity as SwitchProp
+		room_switch.name = _prop_name(kind, Room.Kind.EMPTY)
+		room_switch.size = size
+		room_switch.switch_id = StringName(def.get("id", "sw"))
+		room_switch.mode = int(def.get("mode", 0)) as SwitchProp.Mode
+		room_switch.starts_on = int(def.get("starts_on", 0)) == 1
+		room_switch.z_index = int(def.get("z", 0))
+		room_switch.position = Vector2(def.x, def.y) + size / 2.0
+		parent.add_child(room_switch, true)
+		room_switch.owner = room
+		return 1
+
+	var prop := entity as TileProp
 	var surface := int(def.get("surface", Room.Kind.SOLID))
 	prop.name = _prop_name(kind, surface)
 	prop.size = size
@@ -105,6 +124,8 @@ func _add_entity(def: Dictionary, parent: Node, room: Node, is_root: bool, skipp
 	_add_path(prop, def, room)
 	_add_spin(prop, def, room)
 	_add_breakable(prop, def, kind, room)
+	_add_falling(prop, def, kind, room)
+	_add_power(prop, def, room)
 
 	var added := 1
 	for child_def: Dictionary in def.get("children", []):
@@ -158,6 +179,36 @@ func _add_breakable(prop: TileProp, def: Dictionary, kind: int, room: Node) -> v
 		prop.breakable = _add_component(prop, Breakable.new(), "Breakable", room)
 	prop.breakable.respawn = float(def.get("respawn", 2.5))
 	prop.breakable.delay = float(def.get("delay", 0.4))
+
+
+func _add_falling(prop: TileProp, def: Dictionary, kind: int, room: Node) -> void:
+	if kind != PrototypeKind.FALL_BLOCK:
+		return
+	if prop.falling == null:
+		prop.falling = _add_component(prop, FallingBehavior.new(), "FallingBehavior", room)
+	prop.falling.delay = float(def.get("fall_delay", 0.3))
+	prop.falling.gravity = float(def.get("fall_gravity", 350.0))
+	prop.falling.max_speed = float(def.get("fall_max", 90.0))
+
+
+func _add_power(prop: TileProp, def: Dictionary, room: Node) -> void:
+	if (prop.power == null
+		and not def.has("watches")
+		and not def.has("power_effect")
+		and not def.has("starts_open")
+	):
+		return
+
+	if prop.power == null:
+		prop.power = _add_component(prop, Power.new(), "Power", room)
+
+	var watched: Array[StringName] = []
+	for switch_id in def.get("watches", []):
+		watched.append(StringName(switch_id))
+	prop.power.watches = watched
+	prop.power.need = int(def.get("need", 0)) as Power.Need
+	prop.power.effect = int(def.get("power_effect", Power.Effect.RUNS)) as Power.Effect
+	prop.power.starts_on_when_unwatched = int(def.get("starts_open", 0)) == 1
 
 
 func _add_component(prop: TileProp, component: Node, component_name: String, room: Node) -> Node:

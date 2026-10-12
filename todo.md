@@ -9,7 +9,7 @@ the final retirement checklist.
 Next safe parallel wave:
 
 - [x] AnimationPlayer plus Pogo stride (Task 1).
-- [ ] Switch/gate/power, fall block, and track audit (Task 3).
+- [x] Switch/gate/power, fall block, and track audit (Task 3).
 - [ ] Pure run-build and stat stacking model (Task 6A).
 
 ## Use groups for room-wide broadcasts
@@ -21,8 +21,6 @@ signals for pairwise contacts and signals for one-off facts (`died`, `hurt`).
   `frozen`; a `set_group` per group does it in one line.
 - [ ] `Room.use_surfaces`: broadcast the character's surfaces to the
   `tile_props` group and let each prop decide its own exclusion.
-- [ ] Switches and gates: a switch calls its channel's group
-  (`&"gate_" + channel`) instead of holding references to its gates.
 
 Before converting, handle these:
 
@@ -32,6 +30,11 @@ Before converting, handle these:
   runtime instead of at parse time.
 - `call_group` runs immediately. From inside a contact handler, use
   `call_group_flags` with `SceneTree.GROUP_CALL_DEFERRED` (see `ContactBox`).
+
+Switches and powered props are not room-wide broadcasts. A switch emits its
+state change, while each `Power` component resolves the requested switch ids
+through its owning room and connects directly. The component reads initial
+state when binding and caches later signal updates for all/any evaluation.
 
 ## Room cell queries
 
@@ -62,3 +65,12 @@ sheets need no shared canvas (the AtlasTexture margins in `sync_art.gd` go away)
 Not needed for this: `AnimationTree`. Clip choice is simple and driven by code,
 and crossfades do little for pixel flipbooks. Revisit if land or run-start
 transition clips arrive.
+
+## Bugs
+
+ - tapping jump and pressing left/right pogo continues your jump (much to high)
+   - it's like your getting the boost from connecting with the pogo bash
+ - the square hitboxes are funky
+   - we catch on transitions from green solid blocks to art tileset
+   - same for jumping and "catching" the edge
+   - floats a solid pixel or 2 above ground

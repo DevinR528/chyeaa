@@ -159,7 +159,7 @@ Acceptance:
 
 ## 3. Remaining prop components
 
-Status: ready. Implement this as one task because the importer and
+Status: complete. Implemented as one task because the importer and
 `props_smoke.gd` are shared.
 
 Prototype sources:
@@ -183,31 +183,38 @@ Godot targets:
 Requirements:
 
 1. Switch modes match the prototype: toggle changes on overlap entry,
-   momentary follows overlap, once latches on. Reset restores `starts_on`.
-2. A power component watches switch ids, supports all/any, and effects
-   `runs`, `stops`, `appears`, and `vanishes`. A hidden prop has no drawing,
-   collision, or surface use. Paused motion holds phase.
-3. Scope switch discovery to the owning room. Do not use an unscoped tree-wide
+   momentary follows overlap, once latches on. Reset restores `starts_on`. A
+   switch emits `state_changed(id, is_on)` only when its state changes.
+2. A power component resolves switch ids through its owning room, connects to
+   their signals, and evaluates all/any from cached switch state. Initial
+   binding reads current state so it does not depend on a transition occurring
+   after the prop enters the tree.
+3. Power effects are `runs`, `stops`, `appears`, and `vanishes`. A hidden prop
+   has no drawing, collision, or surface use. Paused motion holds phase. Do not
+   poll switches or emit a signal every frame.
+4. Scope switch discovery and signal connections to the owning room. Disconnect
+   cleanly when either endpoint leaves it; do not use an unscoped tree-wide
    group that could affect another loaded room.
-4. Gate is a TileProp with the vanish effect and `starts_open` behavior.
-5. Fall block arms only when stood on as a solid surface, waits `fall_delay`,
+5. Gate is a TileProp with the vanish effect and `starts_open` behavior.
+6. Fall block arms only when stood on as a solid surface, waits `fall_delay`,
    shakes by the prototype amount, accelerates with configured gravity to its
    cap, substeps by at most `TILE/2`, lands without tunneling, and resets home.
-6. Audit Track before adding code. A TileProp carrying children with
-   `PathMotion` may already cover the kind. If it does, add only a named prefab
-   and importer mapping; do not duplicate movement logic.
-7. Keep optional behavior as component children, not new TileProp subclasses.
+7. Prototype Track imports as the existing moving-platform prefab carrying a
+   child. Do not add a Track component or prefab; `OscillatingMotion` and
+   `PathMotion` already provide all of its movement behavior.
+8. Keep optional behavior as component children, not new TileProp subclasses.
 
 Acceptance:
 
 - Extend `props_smoke` for all three switch modes, all/any, every power effect,
-  room isolation, fall delay/landing/reset, and track cargo.
+  room isolation, fall delay/landing/reset, and moving-platform cargo.
 - Port the important cases from `faller.test.ts`.
 - Do not alter the authored demo: it currently contains none of these kinds.
 
 ## 4. Piece import and stitching
 
-Status: blocked by Task 3 because `on_off_gate.json` uses Switch and Gate.
+Status: ready. Task 3 supplies the Switch and Gate prefabs used by
+`on_off_gate.json`.
 
 Prototype sources:
 
@@ -217,22 +224,31 @@ Prototype sources:
 
 Godot targets:
 
-- `src/pieces`, `scenes/pieces`, and small piece metadata resources
-- a one-time `src/tools/import_pieces.gd`
+- `src/pieces`, including `generate_room.gd` and focused stitching helpers
+- `scenes/pieces` and small piece metadata resources
+- a repeatable, standalone `src/tools/import_pieces.gd`
 - `tests/pieces_smoke.gd`
 
 Import requirements:
 
-1. Import all entries from the piece index into individual editable scenes.
-   Each scene has the same room layer structure as `demo.tscn`, entry/exit
-   portal markers, entities (including nested children), spawn marker when
-   present, and metadata for difficulty, tags, and cap status.
-2. Preserve gameplay semantics first. Paint 8 px kind tiles for collision and
-   triggers. Instance an empty hand-authored `BlockTerrain`; do not synthesize
-   or rewrite the earth atlas. Art can be painted in Godot afterward.
-3. Import into `scenes/pieces` only. Never rewrite `demo.tscn`.
-4. The importer is deterministic and can refuse to overwrite a scene edited
-   after import, using the same fingerprint principle as `sync_art.gd`.
+1. Treat the JavaScript piece index and JSON files as the continuing authoring
+   source. Import all entries into individual Godot scenes and metadata
+   resources whenever those sources change.
+2. The importer stands on its own: it does not require another import script to
+   have run and does not read from or mutate `demo.tscn`. Validate inputs before
+   replacing outputs and report the source file for invalid portals, entities,
+   or tile data.
+3. Each generated scene has the same room layer structure as `demo.tscn`,
+   entry/exit portal markers, entities (including nested children), spawn marker
+   when present, and metadata for difficulty, tags, and cap status.
+4. Preserve gameplay semantics first. Paint 8 px collision and trigger cells
+   with the placeholder kind TileSet. Actual art terrain is not required for
+   imported pieces, and the importer must not synthesize or rewrite the
+   hand-authored earth atlas.
+5. Import into `scenes/pieces` only. Generated piece scenes are replaceable
+   outputs, so keep hand-authored additions elsewhere.
+6. Import is deterministic and safe to run repeatedly: unchanged JavaScript
+   input produces byte-equivalent Godot output.
 
 Stitch requirements:
 
@@ -241,16 +257,17 @@ Stitch requirements:
 2. Runtime stitching consumes imported scenes/resources, never JSON.
 3. Translate tiles, markers, and root entities once. Child entity transforms
    remain relative to their parent.
-4. Generated rooms set `auto_border` behavior through actual Godot cells/walls,
-   not retained prototype run data.
 
 Acceptance:
 
 - Port `generate_room.test.ts` cases: facing portals join, mismatched apertures
   use a flex corridor, overlap is rejected, caps/budget are respected, and a
   fixed seed is deterministic.
+- Run the importer twice with no output change, then change a source fixture and
+  verify the corresponding imported piece changes without touching the demo.
 - Load one stitched room in a test RoomRunner and verify spawn, room extent,
   collisions, and entity ownership.
+- Verify runtime generation succeeds with the prototype JSON unavailable.
 - Update `tests/MODULE.md`; the current mention of piece tests is aspirational.
 
 ## 5. Screen shake and vignette

@@ -15,7 +15,9 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   movement, and its wall probe measures the gap to a wall.
 - `props_smoke.gd` — riding a moving platform, jumping into a descending one,
   breakables, grapple and pogo on props, death props, per-character exclusion,
-  crushing (and that one solid is not a crush), and spin layout.
+  crushing (and that one solid is not a crush), spin layout, switch modes,
+  room-scoped all/any power and its four effects, falling blocks, and
+  moving-platform cargo.
 - `actors_smoke.gd` — walker turns at walls and ledges, stomp and side hurt,
   pickup and throw, ball bounces off the floor, walkers it kills, and other
   balls, standing on an idle ball, and a thrower's immunity to their own ball.

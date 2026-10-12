@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/props/switch_prop.gd" id="1_switch"]
+
+[node name="Switch" type="Area2D"]
+script = ExtResource("1_switch")

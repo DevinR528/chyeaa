@@ -15,8 +15,9 @@ Standard, Grappler, and Pogo.
 - `presentation/` — `game_audio.tscn`, the pooled gameplay-sound listener
   instanced by `main.tscn` and wired to its `RoomRunner`.
 - `props/` — `block.tscn` is the base `TileProp`. `moving_platform.tscn`,
-  `breakable.tscn`, and `windmill.tscn` inherit it with a component already
-  added. Turn on Editable Children on an instance to tune its components.
+  `breakable.tscn`, `windmill.tscn`, `gate.tscn`, and `fall_block.tscn` inherit
+  it with components already added. `switch.tscn` is the non-solid player
+  sensor. Turn on Editable Children on an instance to tune components.
 - `tiles/` — `block_terrain.tscn`, the `BlockTerrain` layer and its hand-made
   TileSet (earth art on 8 px cells). Rooms instance it.
 - `rooms/` — room scenes. Each has `BlockTerrain` (an instance of

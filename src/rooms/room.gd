@@ -23,6 +23,9 @@ enum Kind {
 	POGO,
 }
 
+signal switch_registered(room_switch: SwitchProp)
+signal switch_unregistered(room_switch: SwitchProp)
+
 ## TileSet custom data layer holding a `Kind` on every tile.
 const KIND_DATA := &"kind"
 ## TileSet physics layer that collides on WORLD.
@@ -32,6 +35,7 @@ const _TILE_MASK := PhysicsLayers.WORLD | PhysicsLayers.HAZARD | PhysicsLayers.E
 
 ## TileSet to how many cells past its own a tile's collision reaches.
 var _reach_by_tile_set := {}
+var _switches_by_id: Dictionary = {}
 
 @onready var terrain: TileMapLayer = $Terrain
 @onready var block_terrain: TileMapLayer = $BlockTerrain
@@ -103,8 +107,40 @@ func actors() -> Array[RoomActor]:
 	return found
 
 
-## Props first, so carriers are back in place before anything resets onto them.
+func register_switch(room_switch: SwitchProp) -> void:
+	var matches: Array = _switches_by_id.get(room_switch.switch_id, [])
+	if matches.has(room_switch):
+		return
+	matches.append(room_switch)
+	_switches_by_id[room_switch.switch_id] = matches
+	switch_registered.emit(room_switch)
+
+
+func unregister_switch(room_switch: SwitchProp) -> void:
+	var matches: Array = _switches_by_id.get(room_switch.switch_id, [])
+	if not matches.has(room_switch):
+		return
+	matches.erase(room_switch)
+	if matches.is_empty():
+		_switches_by_id.erase(room_switch.switch_id)
+	else:
+		_switches_by_id[room_switch.switch_id] = matches
+	switch_unregistered.emit(room_switch)
+
+
+func switches_with_id(switch_id: StringName) -> Array[SwitchProp]:
+	var found: Array[SwitchProp] = []
+	for room_switch in _switches_by_id.get(switch_id, []):
+		if is_instance_valid(room_switch):
+			found.append(room_switch)
+	return found
+
+
+## Switch state first, then carriers before what they carry, then actors.
 func reset_entities() -> void:
+	for matches: Array in _switches_by_id.values():
+		for room_switch: SwitchProp in matches:
+			room_switch.reset()
 	for prop in props():
 		prop.reset()
 	for actor in actors():

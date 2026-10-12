@@ -20,9 +20,12 @@ Typed GDScript only. Scenes and imported assets do not live here.
 - `props/` — `TileProp`: a box with a surface kind (solid, grapple, exit, death,
   pogo, or none). Optional component child nodes in `props/components/` move it
   (`OscillatingMotion`, `PathMotion`), spread the props it carries (`SpinMotion`),
-  or break it (`Breakable`). Carried props are child nodes. The room excludes
-  grapple and pogo props per character, resets props on restart, and freezes them
-  during hitstop. Switches, gates, fall blocks, and tracks are not ported yet.
+  break it (`Breakable`), drop it (`FallingBehavior`), or apply switch power
+  (`Power`). Carried props are child nodes. Switches emit state changes to
+  room-scoped Power subscribers. The room excludes grapple and pogo props per
+  character, resets props and switches on restart, and freezes props during
+  hitstop. Gate and fall-block prefabs compose these behaviors. Prototype Track
+  entities import as ordinary moving platforms carrying a child.
 - `actors/` — `RoomActor`, a `CharacterBody2D` that moves on its own, and its two
   kinds. `Walker` patrols, turns at walls and ledges, hurts on side contact, and
   dies to a stomp or a hazardous ball (`died`). `Throwable` is the ball: carried,
@@ -34,7 +37,8 @@ Typed GDScript only. Scenes and imported assets do not live here.
   signal: each decides its own reaction in the handler and applies it at the
   start of its own tick, so the order Godot delivers the pair's signals never
   matters. Read the class comment before adding a contact reaction.
-- `pieces/` — portal matching and room stitching.
+- `pieces/` — portal matching and room stitching. `generate_room.gd` assembles
+  imported Godot piece scenes/resources; runtime code never reads prototype JSON.
 - `presentation/` — camera, backdrop, character sprites, and the `FullscreenToggle`
   autoload. F11 grows the window through quarter-scale 840x504 steps and then
   enters fullscreen; Shift+F11 shrinks it. Manual resizing uses fractional
@@ -59,10 +63,12 @@ Typed GDScript only. Scenes and imported assets do not live here.
 Code that real art or animation will replace is grouped in
 `#region Placeholder visuals` blocks with a note on what replaces it.
 - `run/` — build stats, potions, and run-persistent state.
-- `tools/` — one-time migration and ongoing pixel-art import scripts.
+- `tools/` — migration and ongoing import scripts.
   `import_demo_room.gd` already ran; re-running overwrites Godot edits to the demo room.
   `import_demo_entities.gd` already ran; re-running replaces the demo room's `Props` node.
   `import_demo_actors.gd` already ran; re-running replaces the demo room's `Actors` node.
+  `import_pieces.gd` is planned as a repeatable standalone importer because
+  pieces continue to be authored in the JavaScript editor.
   `sync_art.gd` is ongoing: it copies the art Godot uses from the prototype's
   `../assets` (animation, backdrop, and tile sheets) and rebuilds each animation's
   AnimationLibrary. Re-run after exporting art; generated tracks are replaced

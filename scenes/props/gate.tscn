@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://src/props/components/power.gd" id="2_power"]
+
+[node name="Gate" node_paths=PackedStringArray("power") instance=ExtResource("1_block")]
+size = Vector2(16, 48)
+power = NodePath("Power")
+
+[node name="Power" type="Node" parent="."]
+script = ExtResource("2_power")
+effect = 3

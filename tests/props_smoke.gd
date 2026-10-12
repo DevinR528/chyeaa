@@ -10,6 +10,9 @@ const BLOCK_SCENE := preload("res://scenes/props/block.tscn")
 const MOVING_PLATFORM_SCENE := preload("res://scenes/props/moving_platform.tscn")
 const BREAKABLE_SCENE := preload("res://scenes/props/breakable.tscn")
 const WINDMILL_SCENE := preload("res://scenes/props/windmill.tscn")
+const SWITCH_SCENE := preload("res://scenes/props/switch.tscn")
+const GATE_SCENE := preload("res://scenes/props/gate.tscn")
+const FALL_BLOCK_SCENE := preload("res://scenes/props/fall_block.tscn")
 const FLOOR_ROW := Rooms.FLOOR_ROW
 const TILE := Rooms.TILE
 const FLOOR_Y := FLOOR_ROW * TILE
@@ -34,6 +37,12 @@ func _run() -> void:
 	await _check_crush_against_wall()
 	await _check_one_solid_does_not_crush()
 	await _check_spin_spreads_present_arms()
+	await _check_switch_detects_player()
+	await _check_switch_modes_and_reset()
+	await _check_power_needs_and_effects()
+	await _check_switch_room_isolation()
+	await _check_fall_block()
+	await _check_moving_platform_carries_prop()
 	quit(1 if _failed else 0)
 
 
@@ -225,6 +234,152 @@ func _check_spin_spreads_present_arms() -> void:
 	await _free(room, player)
 
 
+func _check_switch_modes_and_reset() -> void:
+	var room := _empty_room()
+	var player := STANDARD_SCENE.instantiate() as PlayerBody
+	var toggle := _add_switch(room, &"toggle", SwitchProp.Mode.TOGGLE)
+	toggle._on_body_entered(player)
+	_expect(toggle.is_on, "toggle switch did not turn on at overlap entry")
+	toggle._on_body_entered(player)
+	_expect(toggle.is_on, "toggle switch changed while overlap continued")
+	toggle._on_body_exited(player)
+	toggle._on_body_entered(player)
+	_expect(not toggle.is_on, "toggle switch did not change on the next overlap entry")
+
+	var momentary := _add_switch(room, &"momentary", SwitchProp.Mode.MOMENTARY)
+	momentary._on_body_entered(player)
+	_expect(momentary.is_on, "momentary switch did not follow overlap entry")
+	momentary._on_body_exited(player)
+	_expect(not momentary.is_on, "momentary switch did not follow overlap exit")
+
+	var once := _add_switch(room, &"once", SwitchProp.Mode.ONCE)
+	once._on_body_entered(player)
+	once._on_body_exited(player)
+	once._on_body_entered(player)
+	_expect(once.is_on, "once switch did not stay latched")
+	toggle.starts_on = true
+	room.reset_entities()
+	_expect(toggle.is_on, "reset did not restore switch starts_on")
+	_expect(not momentary.is_on and not once.is_on, "reset did not clear switch state")
+	player.free()
+	room.free()
+	await process_frame
+
+
+func _check_switch_detects_player() -> void:
+	var room := _empty_room()
+	var room_switch := _add_switch(room, &"physical", SwitchProp.Mode.MOMENTARY)
+	room_switch.position = Vector2(240, FLOOR_Y - 8)
+	var player := _spawn(room, STANDARD_SCENE, Vector2(240, FLOOR_Y))
+	await _physics_frames(3)
+	_expect(room_switch.is_on, "switch Area2D did not detect the player's body")
+	await _free(room, player)
+
+
+func _check_power_needs_and_effects() -> void:
+	var room := _empty_room()
+	var player := STANDARD_SCENE.instantiate() as PlayerBody
+	var switch_a := _add_switch(room, &"a", SwitchProp.Mode.TOGGLE)
+	var switch_b := _add_switch(room, &"b", SwitchProp.Mode.TOGGLE)
+	var all_gate := _add_powered_prop(room, GATE_SCENE, Vector2(160, 120), [&"a", &"b"], Power.Need.ALL, Power.Effect.VANISHES)
+	var any_prop := _add_powered_prop(room, BLOCK_SCENE, Vector2(200, 120), [&"a", &"b"], Power.Need.ANY, Power.Effect.APPEARS)
+	var runner := _add_powered_prop(room, MOVING_PLATFORM_SCENE, Vector2(240, 120), [&"a"], Power.Need.ALL, Power.Effect.RUNS)
+	var stopper := _add_powered_prop(room, MOVING_PLATFORM_SCENE, Vector2(280, 120), [&"a"], Power.Need.ALL, Power.Effect.STOPS)
+	var starts_open := _add_powered_prop(room, GATE_SCENE, Vector2(320, 120), [], Power.Need.ALL, Power.Effect.VANISHES)
+	starts_open.power.starts_on_when_unwatched = true
+	await process_frame
+	await process_frame
+
+	_expect(all_gate.is_present(), "all gate started vanished before every switch was on")
+	_expect(not any_prop.is_present() and any_prop.collision_layer == 0, "appears prop started present")
+	_expect(not starts_open.is_present(), "legacy starts_open gate started closed")
+	var runner_start := runner.position
+	var stopper_start := stopper.position
+	await _physics_frames(5)
+	_expect(runner.position.is_equal_approx(runner_start), "runs effect advanced while unpowered")
+	_expect(not stopper.position.is_equal_approx(stopper_start), "stops effect did not run while unpowered")
+
+	switch_a._on_body_entered(player)
+	await physics_frame
+	_expect(all_gate.is_present(), "all gate vanished with only one switch on")
+	_expect(any_prop.is_present() and any_prop.collision_layer != 0, "any/appears did not become present")
+	runner_start = runner.position
+	stopper_start = stopper.position
+	await _physics_frames(5)
+	_expect(not runner.position.is_equal_approx(runner_start), "runs effect did not advance while powered")
+	_expect(stopper.position.is_equal_approx(stopper_start), "stops effect advanced while powered")
+
+	switch_b._on_body_entered(player)
+	await physics_frame
+	_expect(not all_gate.is_present() and all_gate.collision_layer == 0, "all/vanishes gate stayed present")
+	_expect(room.prop_at(all_gate.global_position, Room.Kind.SOLID) == null, "hidden gate remained usable as a surface")
+	player.free()
+	room.free()
+	await process_frame
+
+
+func _check_switch_room_isolation() -> void:
+	var room_a := _empty_room()
+	var room_b := _empty_room()
+	var player := STANDARD_SCENE.instantiate() as PlayerBody
+	var switch_a := _add_switch(room_a, &"shared", SwitchProp.Mode.TOGGLE)
+	_add_switch(room_b, &"shared", SwitchProp.Mode.TOGGLE)
+	var gate_a := _add_powered_prop(room_a, GATE_SCENE, Vector2(160, 120), [&"shared"], Power.Need.ANY, Power.Effect.VANISHES)
+	var gate_b := _add_powered_prop(room_b, GATE_SCENE, Vector2(160, 120), [&"shared"], Power.Need.ANY, Power.Effect.VANISHES)
+	await process_frame
+	await process_frame
+	switch_a._on_body_entered(player)
+	await physics_frame
+	_expect(not gate_a.is_present(), "switch did not affect its own room")
+	_expect(gate_b.is_present(), "switch leaked into another loaded room")
+	player.free()
+	room_a.free()
+	room_b.free()
+	await process_frame
+
+
+func _check_fall_block() -> void:
+	var room := _empty_room()
+	var block := Rooms.add_prop(room, FALL_BLOCK_SCENE, Vector2(240, 80), Vector2(16, 16))
+	block.falling.delay = 0.1
+	block.falling.gravity = 10_000.0
+	block.falling.max_speed = 400.0
+	block.surface = Room.Kind.POGO
+	block.stood_on()
+	_expect(block.falling.state == FallingBehavior.State.IDLE, "non-solid fall block armed")
+	block.surface = Room.Kind.SOLID
+	block.stood_on()
+	_expect(block.falling.state == FallingBehavior.State.ARMING, "solid fall block did not arm")
+	await _physics_frames(4)
+	_expect(block.falling.state == FallingBehavior.State.ARMING, "fall block ignored its delay")
+	for _frame in 120:
+		await physics_frame
+		if block.falling.state == FallingBehavior.State.LANDED:
+			break
+	_expect(block.falling.state == FallingBehavior.State.LANDED, "fall block did not land")
+	_expect(absf(block.rect().end.y - FLOOR_Y) < 0.1, "fall block landed at %.2f instead of %.2f" % [block.rect().end.y, FLOOR_Y])
+	block.reset()
+	_expect(block.falling.state == FallingBehavior.State.IDLE, "fall block reset did not restore idle")
+	_expect(block.position.is_equal_approx(Vector2(240, 80)), "fall block reset did not restore home")
+	room.free()
+	await process_frame
+
+
+func _check_moving_platform_carries_prop() -> void:
+	var room := _empty_room()
+	var platform := Rooms.add_prop(room, MOVING_PLATFORM_SCENE, Vector2(200, 120), Vector2(16, 16), Room.Kind.EMPTY)
+	platform.oscillation.travel = 24.0
+	platform.oscillation.speed = 2.0
+	var cargo := Rooms.add_prop(platform, BLOCK_SCENE, Vector2.ZERO, Vector2(48, 16))
+	await physics_frame
+	var offset := cargo.global_position - platform.global_position
+	await _physics_frames(10)
+	_expect((cargo.global_position - platform.global_position).is_equal_approx(offset), "moving-platform cargo did not retain its offset")
+	_expect(not platform.position.is_equal_approx(Vector2(200, 120)), "moving platform did not move")
+	room.free()
+	await process_frame
+
+
 func _empty_room() -> Room:
 	return Rooms.make_room(root, func(_layers: Dictionary) -> void: pass)
 
@@ -237,6 +392,36 @@ func _moving_platform(room: Room, center: Vector2, size: Vector2, axis: Oscillat
 	platform.oscillation.phase = 0.0
 	platform.reset()
 	return platform
+
+
+func _add_switch(room: Room, switch_id: StringName, mode: SwitchProp.Mode) -> SwitchProp:
+	var room_switch := SWITCH_SCENE.instantiate() as SwitchProp
+	room_switch.switch_id = switch_id
+	room_switch.mode = mode
+	room.add_child(room_switch)
+	return room_switch
+
+
+func _add_powered_prop(
+	room: Room,
+	scene: PackedScene,
+	center: Vector2,
+	watches: Array[StringName],
+	need: Power.Need,
+	effect: Power.Effect,
+) -> TileProp:
+	var prop := scene.instantiate() as TileProp
+	prop.position = center
+	if prop.power == null:
+		var component := Power.new()
+		component.name = "Power"
+		prop.add_child(component)
+		prop.power = component
+	prop.power.watches = watches
+	prop.power.need = need
+	prop.power.effect = effect
+	room.add_child(prop)
+	return prop
 
 
 func _spawn(room: Room, scene: PackedScene, feet: Vector2) -> PlayerBody:
