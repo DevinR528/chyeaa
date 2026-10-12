@@ -1,35 +1,12 @@
 class_name CheckpointPotion
-extends RefCounted
+extends Potion
 ## Plants a respawn flag at the player's feet. A spent potion stays in the belt
 ## so the flag remains until the run leaves the room or the potion is unequipped
 ## while it still has charges.
 
-const CONTINUE_CHANCE := 0.28
-const MAX_USES := 5
-
-var uses := 1
-var instant := true
 var has_flag := false
 var flag := Vector2.ZERO
 var flag_node: Node2D
-
-
-static func roll_uses(rng: Callable = Callable()) -> int:
-	var count := 1
-	while count < MAX_USES:
-		var roll: float = rng.call() if rng.is_valid() else randf()
-		if roll >= CONTINUE_CHANCE:
-			break
-		count += 1
-	return count
-
-
-func _init(rng: Callable = Callable()) -> void:
-	uses = roll_uses(rng)
-
-
-func can_use(_player: PlayerBody) -> bool:
-	return uses > 0
 
 
 func clear(room: Room) -> void:
@@ -38,7 +15,7 @@ func clear(room: Room) -> void:
 	_drop_flag()
 
 
-func use(feet: Vector2, room: Room) -> CheckpointUse:
+func use(feet: Vector2, room: Room) -> PotionUse:
 	if uses <= 0:
 		return null
 	var previous: Variant = room.checkpoint

@@ -40,8 +40,55 @@ change, and this boot check:
 ```
 
 Current suites are `abilities_smoke`, `actors_smoke`, `art_smoke`,
-`block_terrain_smoke`, `demo_room_smoke`, `locomotion_smoke`, `props_smoke`,
-`reach_overlay_smoke`, and `triggers_smoke`.
+`audio_smoke`, `block_terrain_smoke`, `debug_smoke`, `demo_room_smoke`,
+`locomotion_smoke`, `pieces_smoke`, `presentation_smoke`, `props_smoke`,
+`reach_overlay_smoke`, `run_smoke`, `run_ui_smoke`, and `triggers_smoke`.
+
+## Still to do
+
+Tasks 1-7 below are done. This is what is still missing if the Godot game is
+supposed to stand in for `../src`.
+
+### A run does not advance
+
+The room generator works. `RoomGenerator.generate_layout` / `build_room` stitch
+imported pieces, and `pieces_smoke` spawns a player in one of those rooms.
+Nothing the player launches calls it. `scenes/main.tscn` always plays the
+authored demo.
+
+Leaving through the exit opens the reward menu (`scenes/ui/reward_menu.tscn`),
+adds the picked stack, and restarts that same room. The prototype
+(`world.ts` `_on_gen_cleared`) then generates the next level. There is no room
+graph, overworld, multi-path fallback, or difficulty that climbs with the level.
+
+There is no collected bank and no build screen (`../src/ui/build_screen.ts`:
+drag cards into the build, or skip them into the bank). The HUD bank count is
+always 0. Pause is Resume plus the summary. The prototype pause also restarts
+the room, opens the build screen, and remaps controls.
+
+### Potions and rewind
+
+Checkpoint is the only potion you can drink. Rewind is an id on the build and
+is left out of offers, because the drink, the input log, the scrub screen, and
+the trail are not ported (`../src/level_manager/rewind.ts`,
+`../src/powerup/rewind.ts`, `../src/ui/rewind_screen.ts`,
+`../src/debug/rewind_trail_overlay.ts`).
+
+`ContactLog` is not that log. It is the prototype's debug contact print
+(`../src/physics/debug.ts` `log_contact`): who hit whom, the boxes, and whether
+the decision was stomp, hurt, or bounce. It stays off unless a test turns it
+on. The readout does not show it, and rewind would not read it. Rewind replays
+recorded input.
+
+### Left behind on purpose, or not a runtime port
+
+- Death and exit particles (`../src/level_manager/fx.ts`). Exit audio is ported.
+- The in-browser room, piece, and anim editor. Piece JSON still imports through
+  `src/tools/import_pieces.gd`.
+- The debug tuning panel and sim-speed slider. Use the inspector.
+- Capsule collision. Rectangles stay until feel is signed off.
+- Input remapping and the Nintendo HID profile.
+- `tint` and `wave` shaders. Nothing uses them.
 
 ## Scheduling
 
@@ -345,7 +392,9 @@ Acceptance:
 
 ## 6B. Checkpoint, potion UI, HUD, and pause
 
-Status: complete. Reward flow and room switching stay out of scope.
+Status: complete for checkpoint, the picker, the HUD, and pause. An exit now
+offers three stacks and then restarts the same room. The next generated room,
+the bank, and the build screen are still open. See "Still to do".
 
 Prototype sources:
 
@@ -400,7 +449,8 @@ Requirements:
    cooldown, and kind under the feet.
 2. Structured contact logging behind a separate flag: participants, relevant
    boxes/normal or swept feet, velocities, and the selected stomp/hurt/bounce
-   decision. Logging is off by default.
+   decision. Logging is off by default. This is the debug contact print, not
+   the rewind history.
 3. Diagnostics are read-only and must not change simulation results.
 4. Use Godot's inspector/profiler/collision display for generic diagnostics;
    do not rebuild the browser's tuning panel or profiler.
@@ -421,18 +471,9 @@ and the cell lookup table are both gone.
 
 ## 10. Approval-gated or deferred
 
-- Capsules for players/actors: wait for rectangle feel sign-off because they
-  change tile-lip and contact behavior. Update ContactBox/sensors and all
-  locomotion/contact tests together when approved.
-- Rewind potion/log/screen/trail: decide after feel sign-off. If accepted, port
-  `../src/level_manager/rewind.ts`, `../src/powerup/rewind.ts`,
-  `../src/ui/rewind_screen.ts`, and `../src/debug/rewind_trail_overlay.ts` as one
-  project.
-- Input remapping and Nintendo HID profile: wait for a physical gamepad. Default
-  keyboard, d-pad, stick, and standard joypad actions already exist.
-- Reward screen, room graph, multi-path fallback, and seeded run progression
-  are new Stage 2-3 work, not required to retire the prototype.
-- `tint` and `wave` shaders have no current content users and are not port work.
+Moved into "Still to do". Capsules, rewind, input remapping, and the unused
+shaders stay deferred. The reward card on an exit is in. Replacing the demo
+with the next generated room is not.
 
 ## Final retirement checklist
 

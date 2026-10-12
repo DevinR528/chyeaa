@@ -33,7 +33,7 @@ func _run() -> void:
 	_expect(_restarts.is_empty(), "spawn fall triggered a restart: %s" % [_restarts])
 
 	await _expect_restart_at(main, _first_cell_of(room, Room.Kind.DEATH), RoomRunner.RestartReason.DEATH)
-	await _expect_restart_at(main, _first_cell_of(room, Room.Kind.EXIT), RoomRunner.RestartReason.EXIT)
+	await _expect_exit_offers_a_power_up(main, _first_cell_of(room, Room.Kind.EXIT))
 	await _expect_restart_at(main, Vector2(room.spawn_feet().x, room.kill_plane_y() + 64.0), RoomRunner.RestartReason.FALL)
 
 	_check_out_of_bounds_ceiling(main)
@@ -77,6 +77,31 @@ func _expect_restart_at(main: RoomRunner, feet: Vector2, reason: RoomRunner.Rest
 	_expect(
 		main.player.body_rect().end.y <= spawn_feet.y + 8.0 and absf(main.player.global_position.x - spawn_feet.x) < 8.0,
 		"restart did not return the player to spawn",
+	)
+
+
+func _expect_exit_offers_a_power_up(main: RoomRunner, feet: Vector2) -> void:
+	_restarts.clear()
+	var before := 0
+	for id: RunBuild.Id in RunBuild._ORDER:
+		before += main.build.stack_count(id)
+	main.player.respawn(feet)
+	for _frame in 8:
+		await physics_frame
+		if main.reward_menu.open:
+			break
+	_expect(main.reward_menu.open, "exit did not open the reward menu")
+	_expect(_restarts.is_empty(), "exit restarted before a power-up was picked")
+	main.reward_menu.choose_selected()
+	_expect(_restarts.has(RoomRunner.RestartReason.EXIT), "picking a power-up did not finish the exit")
+	var after := 0
+	for id: RunBuild.Id in RunBuild._ORDER:
+		after += main.build.stack_count(id)
+	_expect(after == before + 1, "the pick did not add one stack (%d -> %d)" % [before, after])
+	var spawn_feet := main.room.spawn_feet()
+	_expect(
+		main.player.body_rect().end.y <= spawn_feet.y + 8.0 and absf(main.player.global_position.x - spawn_feet.x) < 8.0,
+		"exit did not return the player to spawn",
 	)
 
 

@@ -1,8 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/ui/run_ui.gd" id="1_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui/reward_menu.tscn" id="2_reward"]
 
 [node name="RunUI" type="CanvasLayer"]
 layer = 30
 process_mode = 3
 script = ExtResource("1_ui")
+
+[node name="RewardMenu" parent="." instance=ExtResource("2_reward")]

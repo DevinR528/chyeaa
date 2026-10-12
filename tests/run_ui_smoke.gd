@@ -22,8 +22,8 @@ func _run() -> void:
 
 
 func _check_roll_and_belt() -> void:
-	_expect(CheckpointPotion.roll_uses(func() -> float: return 0.99) == 1, "a failed continue roll was not 1 charge")
-	_expect(CheckpointPotion.roll_uses(func() -> float: return 0.0) == 5, "continue rolls did not stop at 5")
+	_expect(Potion.roll_uses(func() -> float: return 0.99) == 1, "a failed continue roll was not 1 charge")
+	_expect(Potion.roll_uses(func() -> float: return 0.0) == 5, "continue rolls did not stop at 5")
 	_expect(
 		RunUI.line_for({"name": "Checkpoint", "uses": 1, "blocked": "Can't use it here"}) == "Checkpoint — Can't use it here",
 		"blocked potion line dropped the reason",

@@ -13,7 +13,8 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 - `debug_smoke.gd` — a fixed run matches with the readout hidden or shown, and
   one stomp is captured as a contact record.
 - `demo_room_smoke.gd` — spawn, landing, character switching and surfaces, and
-  death, exit, and fall restarts in the demo room. Does not pin authored room content.
+  death, exit, and fall restarts in the demo room. The exit opens the reward
+  menu and restarts after a card is picked. Does not pin authored room content.
 - `abilities_smoke.gd` — grapple latch, pull, jump-off, and solid block; pogo down
   bounce and side pop. Builds its small rooms in code.
 - `triggers_smoke.gd` — the player's touch sensor reports exit, death, and kill

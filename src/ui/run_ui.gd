@@ -36,6 +36,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	ticks += 1
 	_refresh_hud()
+	if _reward_open():
+		return
 	if picker_open:
 		_steer_picker()
 		return
@@ -47,6 +49,10 @@ func _process(_delta: float) -> void:
 		open_pause()
 	elif Input.is_action_just_pressed(&"potion"):
 		open_picker()
+
+
+func _reward_open() -> bool:
+	return runner != null and runner.reward_menu != null and runner.reward_menu.open
 
 
 func summary_text() -> String:

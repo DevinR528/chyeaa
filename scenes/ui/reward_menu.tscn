@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/reward_menu.gd" id="1_menu"]
+
+[node name="RewardMenu" type="CanvasLayer"]
+layer = 40
+process_mode = 3
+script = ExtResource("1_menu")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Panel" type="VBoxContainer" parent="Root"]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 36.0
+offset_right = 808.0
+offset_bottom = 280.0
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Root/Panel"]
+layout_mode = 2
+text = "Choose a power-up"
+
+[node name="Hint" type="Label" parent="Root/Panel"]
+layout_mode = 2
+text = "Left and right to move. Jump to take it."
+
+[node name="Cards" type="HBoxContainer" parent="Root/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Card0" type="Button" parent="Root/Panel/Cards"]
+custom_minimum_size = Vector2(220, 150)
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Card1" type="Button" parent="Root/Panel/Cards"]
+custom_minimum_size = Vector2(220, 150)
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Card2" type="Button" parent="Root/Panel/Cards"]
+custom_minimum_size = Vector2(220, 150)
+layout_mode = 2
+autowrap_mode = 2

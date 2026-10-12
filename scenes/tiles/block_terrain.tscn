@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cvyp76tu62q0m"]
 
 [ext_resource type="Texture2D" uid="uid://gkhb3xlpl1vq" path="res://assets/art/earth_tileset/earth_tileset.png" id="1_uw08d"]
+[ext_resource type="Texture2D" uid="uid://chxcp7mdtbxtx" path="res://assets/art/earth_tileset/earth_tiles2.png" id="2_wg6hg"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wg6hg"]
 resource_name = "outer_gray"
@@ -33,6 +34,38 @@ texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
 0:0/0/custom_data_0 = 1
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_42315"]
+resource_name = "thin_special"
+texture = ExtResource("2_wg6hg")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:0/0/custom_data_0 = 1
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:0/0/custom_data_0 = 1
+2:0/0 = 0
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+2:0/0/custom_data_0 = 1
+0:1/0 = 0
+0:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:1/0/custom_data_0 = 1
+1:1/0 = 0
+1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:1/0/custom_data_0 = 1
+2:1/0 = 0
+2:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+2:1/0/custom_data_0 = 1
+0:2/0 = 0
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:2/0/custom_data_0 = 1
+1:2/0 = 0
+1:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:2/0/custom_data_0 = 1
+2:2/0 = 0
+2:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+2:2/0/custom_data_0 = 1
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_uw08d"]
 resource_name = "inner_gray"
@@ -115,6 +148,24 @@ texture_region_size = Vector2i(32, 32)
 2:12/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -12, 16, -12, 16, 20, -16, 20)
 2:12/0/custom_data_0 = 1
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nx2jr"]
+resource_name = "outer_out_gray"
+texture = ExtResource("2_wg6hg")
+margins = Vector2i(0, 8)
+texture_region_size = Vector2i(32, 32)
+0:3/0 = 0
+0:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:3/0/custom_data_0 = 1
+1:3/0 = 0
+1:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:3/0/custom_data_0 = 1
+1:4/0 = 0
+1:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:4/0/custom_data_0 = 1
+0:4/0 = 0
+0:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:4/0/custom_data_0 = 1
+
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_jiw15"]
 resource_name = "inner"
 texture = ExtResource("1_uw08d")
@@ -152,6 +203,8 @@ sources/4 = SubResource("TileSetAtlasSource_2gcvb")
 sources/5 = SubResource("TileSetAtlasSource_0ovdg")
 sources/7 = SubResource("TileSetAtlasSource_jiw15")
 sources/8 = SubResource("TileSetAtlasSource_uinin")
+sources/1 = SubResource("TileSetAtlasSource_42315")
+sources/6 = SubResource("TileSetAtlasSource_nx2jr")
 
 [node name="BlockTerrain" type="TileMapLayer" unique_id=473486852]
 tile_set = SubResource("TileSet_bvf0l")

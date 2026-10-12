@@ -100,9 +100,9 @@ func summary(scale: float, bank_count := 0, charges: Dictionary = {}) -> String:
 		if count <= 0:
 			continue
 		if charges.has(id):
-			parts.append("%s (%d left)" % [_display_name(id), int(charges[id])])
+			parts.append("%s (%d left)" % [name_of(id), int(charges[id])])
 		else:
-			parts.append("%s×%d" % [_display_name(id), count])
+			parts.append("%s×%d" % [name_of(id), count])
 	if scale < 1.0:
 		parts.append("sim %d%%" % roundi(scale * 100.0))
 	if bank_count > 0:
@@ -112,7 +112,7 @@ func summary(scale: float, bank_count := 0, charges: Dictionary = {}) -> String:
 	return " · ".join(parts)
 
 
-static func _display_name(id: Id) -> String:
+static func name_of(id: Id) -> String:
 	match id:
 		Id.SLOW_TIME:
 			return "Slow Time"
@@ -126,4 +126,43 @@ static func _display_name(id: Id) -> String:
 			return "Checkpoint"
 		Id.REWIND:
 			return "Rewind"
+	return ""
+
+
+## Up to `count` distinct power-ups that can still take a stack, in offer order.
+## `rng` returns a float in [0, 1), the same contract as `randf`.
+func roll_offer(count := 3, rng: Callable = Callable()) -> Array[Id]:
+	var pool: Array[Id] = []
+	for id: Id in _ORDER:
+		# Rewind has no drink yet, so offering it would add a stack the picker cannot use.
+		if id == Id.REWIND:
+			continue
+		if stack_count(id) < MAX_STACKS[id]:
+			pool.append(id)
+	var random := rng if rng.is_valid() else func() -> float: return randf()
+	for i in range(pool.size() - 1, 0, -1):
+		var j := mini(i, int(float(random.call()) * float(i + 1)))
+		var swap := pool[i]
+		pool[i] = pool[j]
+		pool[j] = swap
+	if pool.size() > count:
+		pool.resize(count)
+	return pool
+
+
+## Card text. Potions name the Potion action; charges are rolled when equipped.
+static func describe(id: Id) -> String:
+	match id:
+		Id.SLOW_TIME:
+			return "Sim dt ×0.95 per stack (max ×0.80). Full FPS and input every frame."
+		Id.TOP_SPEED:
+			return "+12% max run speed per stack."
+		Id.JUMP_HEIGHT:
+			return "Higher jumps (+8% jump speed per stack)."
+		Id.SLOW_FALL:
+			return "Softer falls. Lower fall gravity and fall speed."
+		Id.CHECKPOINT:
+			return "Potion: press Potion to plant a respawn flag. Limited charges (usually 1)."
+		Id.REWIND:
+			return "Potion: press Potion to rewind to any moment since your last respawn. Limited charges (usually 1)."
 	return ""

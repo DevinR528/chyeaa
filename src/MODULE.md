@@ -62,14 +62,15 @@ Typed GDScript only. Scenes and imported assets do not live here.
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
   `PlayReadout` is the same debug toggle: FPS, velocity, grounded, move and
   ability state, coyote, jump buffer, dash cooldown, and the kind under the
-  feet. `ContactLog` records stomp, hurt, and bounce decisions only when enabled.
+  feet. The mouse drags its title and collapses the body. `ContactLog` records
+  stomp, hurt, and bounce decisions only when enabled. It is not the rewind log.
 - `physics_layers.gd` — named collision layer bits: world, hazard, exit, fall,
   player, contact, grapple, pogo. Grapple and pogo are sensor layers (mask 0).
   The player body is on its own layer, never world.
 
 Code that real art or animation will replace is grouped in
 `#region Placeholder visuals` blocks with a note on what replaces it.
-- `run/` — `RunBuild` stack counts, `SimStep` gameplay delta, and the potion
+- `run/` — `RunBuild` stack counts and the exit offer (`roll_offer`), `SimStep` gameplay delta, and the potion
   belt. Stacks live on the run, not the player. Slow Time scales that delta;
   `Engine.time_scale` stays 1. Checkpoint potions plant a respawn the room reset
   does not clear; the exit does.

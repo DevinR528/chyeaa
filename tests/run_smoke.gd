@@ -14,6 +14,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_check_stack_limits()
+	_check_offer()
 	_check_formulas()
 	_check_summary()
 	_check_character_switch()
@@ -37,6 +38,25 @@ func _check_stack_limits() -> void:
 	after.remove_stack(RunBuild.Id.TOP_SPEED)
 	after.remove_stack(RunBuild.Id.TOP_SPEED)
 	_expect(after.stack_count(RunBuild.Id.TOP_SPEED) == 0, "removing the last stack left an entry")
+
+
+func _check_offer() -> void:
+	var full := RunBuild.new()
+	full.add_stack(RunBuild.Id.CHECKPOINT)
+	var offer := full.roll_offer(3, func() -> float: return 0.0)
+	_expect(offer.size() == 3, "offer was not three cards: %s" % [offer])
+	_expect(not offer.has(RunBuild.Id.CHECKPOINT), "offer included a maxed checkpoint")
+	_expect(not offer.has(RunBuild.Id.REWIND), "offer included rewind before it can be drunk")
+	var again := full.roll_offer(3, func() -> float: return 0.0)
+	_expect(offer == again, "the same rolls did not give the same offer")
+	for id: RunBuild.Id in RunBuild._ORDER:
+		while full.stack_count(id) < RunBuild.MAX_STACKS[id]:
+			full.add_stack(id)
+	_expect(full.roll_offer().is_empty(), "a maxed build still offered a card")
+	_expect(
+		RunBuild.describe(RunBuild.Id.CHECKPOINT).contains("plant a respawn flag"),
+		"checkpoint card did not say what the potion does",
+	)
 
 
 func _check_formulas() -> void:

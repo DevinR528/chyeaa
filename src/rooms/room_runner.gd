@@ -25,6 +25,9 @@ const NO_RESTART := -1
 @export var backdrop: Backdrop
 ## Optional presentation listener; gameplay only provides completed facts.
 @export var audio: GameAudio
+## When set, leaving through the exit opens this offer instead of restarting
+## immediately. Picking a card adds it to the build, then the exit restart runs.
+@export var reward_menu: RewardMenu
 ## Cycled with `next_character`. Order matches the prototype: Standard, Grappler, Pogo.
 @export var characters: Array[PackedScene] = []
 @export var character_index := 1
@@ -39,9 +42,13 @@ var hitstop_left := 0.0
 var _hitstop_requested_this_tick := false
 var _pending_restart := NO_RESTART
 var _pending_shakes: Array[Dictionary] = []
+## The restart that follows a reward pick must not open the menu again.
+var _exit_reward_chosen := false
 
 
 func _ready() -> void:
+	if reward_menu != null:
+		reward_menu.picked.connect(_on_reward_picked)
 	if backdrop != null:
 		backdrop.frame(room.pixel_rect(), get_viewport_rect().size / camera.zoom)
 	switch_character(character_index)
@@ -98,7 +105,7 @@ func player_feet() -> Vector2:
 	return Vector2(player.global_position.x, player.body_rect().end.y)
 
 
-func drink_potion(id: RunBuild.Id) -> CheckpointUse:
+func drink_potion(id: RunBuild.Id) -> PotionUse:
 	if player == null or room == null:
 		return null
 	var record := belt.use(id, player_feet(), room)
@@ -107,6 +114,14 @@ func drink_potion(id: RunBuild.Id) -> CheckpointUse:
 
 
 func restart(reason: RestartReason) -> void:
+	if reason == RestartReason.EXIT and not _exit_reward_chosen and reward_menu != null:
+		var offer := build.roll_offer()
+		if not offer.is_empty():
+			_pending_restart = NO_RESTART
+			reward_menu.open_offer(offer)
+			get_tree().paused = true
+			return
+	_exit_reward_chosen = false
 	# Leaving through the exit drops a planted flag. Death and falls keep it.
 	if reason == RestartReason.EXIT and room != null:
 		belt.on_room_exit(room)
@@ -123,6 +138,14 @@ func _drop_spent_potions() -> void:
 	if player != null:
 		player.apply_build(build)
 	belt.sync(build, room)
+
+
+func _on_reward_picked(id: RunBuild.Id) -> void:
+	_exit_reward_chosen = true
+	build.add_stack(id)
+	apply_build()
+	get_tree().paused = false
+	restart(RestartReason.EXIT)
 
 
 func _respawn() -> void:

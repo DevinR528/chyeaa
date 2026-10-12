@@ -13,13 +13,14 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/run_ui.tscn" id="11_ui"]
 [ext_resource type="Script" path="res://src/debug/play_readout.gd" id="12_readout"]
 
-[node name="Main" type="Node2D" unique_id=36488909 node_paths=PackedStringArray("room", "camera", "backdrop", "audio")]
+[node name="Main" type="Node2D" unique_id=36488909 node_paths=PackedStringArray("room", "camera", "backdrop", "audio", "reward_menu")]
 process_physics_priority = -10
 script = ExtResource("1_runner")
 room = NodePath("Demo")
 camera = NodePath("Camera")
 backdrop = NodePath("Backdrop")
 audio = NodePath("GameAudio")
+reward_menu = NodePath("RunUI/RewardMenu")
 characters = Array[PackedScene]([ExtResource("3_standard"), ExtResource("5_grappler"), ExtResource("6_pogo")])
 
 [node name="Backdrop" parent="." unique_id=1366536037 instance=ExtResource("8_backdrop")]

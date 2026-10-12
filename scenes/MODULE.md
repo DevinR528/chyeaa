@@ -35,5 +35,6 @@ Standard, Grappler, and Pogo.
 - `pieces/` — generated placeholder-art scenes from the JavaScript piece editor.
   Re-run `src/tools/import_pieces.gd`; do not hand-edit these outputs.
 
-Planned folders: `dev/`. `ui/` holds the run HUD, pause menu, and potion picker.
+Planned folders: `dev/`. `ui/` holds the run HUD, pause menu, potion picker, and the
+exit reward menu (`reward_menu.tscn`).
 Scripts referenced by these scenes live under `res://src/`.
