@@ -8,7 +8,8 @@ Typed GDScript only. Scenes and imported assets do not live here.
   `MovementStats`, and abilities. An ability is a `PlayerAbility` child node that
   the body calls through hooks: `Grapple` and `PogoStrike` (with `HalfDisk`).
   Ability tuning lives in the ability's exports; character stat changes are
-  `PlayerBody.stat_overrides` on top of the shared base stats. Every character
+  `PlayerBody.stat_overrides` on top of the shared base stats. A run build
+  (`run/`) recomputes a fresh copy from that baseline and never compounds. Every character
   has a `Carrier` child that picks up and throws throwables (hold and release
   interact). The player emits `hurt` and `stomped` from actor contacts.
 - `input/` — action sampling, press latching, and aim.
@@ -65,7 +66,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
 
 Code that real art or animation will replace is grouped in
 `#region Placeholder visuals` blocks with a note on what replaces it.
-- `run/` — build stats, potions, and run-persistent state.
+- `run/` — `RunBuild` stack counts and the `SimStep` gameplay delta. Stacks live
+  on the run, not the player. Slow Time scales that delta; `Engine.time_scale`
+  stays 1 so UI, audio, and presentation keep real time.
 - `tools/` — migration and ongoing import scripts.
   `import_demo_room.gd` already ran; re-running overwrites Godot edits to the demo room.
   `import_demo_entities.gd` already ran; re-running replaces the demo room's `Props` node.

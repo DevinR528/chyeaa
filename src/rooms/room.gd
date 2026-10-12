@@ -39,6 +39,8 @@ var _switches_by_id: Dictionary = {}
 
 ## Optional generated-room bounds. Authored rooms derive their extent from tiles.
 @export var extent_cells := Rect2i()
+## Multiplier on gameplay deltas. Slow Time lowers it; presentation ignores it.
+var sim_scale := 1.0
 
 @onready var terrain: TileMapLayer = $Terrain
 @onready var block_terrain: TileMapLayer = $BlockTerrain

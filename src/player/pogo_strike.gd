@@ -95,9 +95,9 @@ func update_active(delta: float, input: PlayerInputFrame) -> bool:
 		return false
 	_apply_strike_velocity(input, delta)
 	if _try_slash_connect():
-		body.move_and_slide()
+		SimStep.slide(body)
 		return true
-	body.move_and_slide()
+	SimStep.slide(body)
 	if not _try_slash_connect() and strike_left <= 0.0:
 		state = State.INACTIVE
 	return true

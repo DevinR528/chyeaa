@@ -47,6 +47,8 @@ const CRUSH_SENSOR_INSET := 3.0
 @export var stats: MovementStats
 ## Per-character changes applied to a copy of `stats`, keyed by MovementStats property.
 @export var stat_overrides: Dictionary[StringName, float] = {}
+## Baseline after `stat_overrides`, before any run build. Reapplying a build starts here.
+var base_stats: MovementStats
 @export var input_path: NodePath = ^"PlayerInput"
 ## Rooms enable their grapple and pogo tile layers only for characters that use them.
 @export var uses_grapple_surfaces := false
@@ -90,6 +92,7 @@ func _ready() -> void:
 	stats = MovementStats.new() if stats == null else stats.copy()
 	for property in stat_overrides:
 		stats.set(property, stat_overrides[property])
+	base_stats = stats.copy()
 	air_jumps_left = stats.air_jumps
 	var touch_sensor := _add_sensor(&"TouchSensor", TOUCH_SENSOR_INSET, TRIGGER_LAYERS)
 	touch_sensor.body_shape_entered.connect(_on_touch_sensor_body_shape_entered)
@@ -104,27 +107,33 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if frozen:
 		return
+	var sim_delta := SimStep.delta(self, delta)
 	_apply_stomp()
 	previous_feet_y = body_rect().end.y
 	var input_frame := player_input.consume()
 	var was_on_floor := is_on_floor()
 
-	_tick_timers(delta, input_frame, was_on_floor)
+	_tick_timers(sim_delta, input_frame, was_on_floor)
 	if ability != null:
-		ability.tick(delta)
-		if ability.update_active(delta, input_frame):
+		ability.tick(sim_delta)
+		if ability.update_active(sim_delta, input_frame):
 			# A release during the ability must not read as a fresh release edge afterwards.
 			jump_held_previous = input_frame.jump_held
-			_finish_tick(was_on_floor, input_frame)
+			_finish_tick(was_on_floor, input_frame, sim_delta)
 			return
 
 	_try_dash(input_frame)
-	_update_motion(delta, input_frame, was_on_floor)
+	_update_motion(sim_delta, input_frame, was_on_floor)
 	if ability != null and ability.try_start(input_frame):
-		ability.update_active(delta, input_frame)
+		ability.update_active(sim_delta, input_frame)
 	else:
-		move_and_slide()
-	_finish_tick(was_on_floor, input_frame)
+		SimStep.slide(self)
+	_finish_tick(was_on_floor, input_frame, sim_delta)
+
+
+## Replaces `stats` from `base_stats`. Safe to call again for the same build.
+func apply_build(build: RunBuild) -> void:
+	stats = build.recompute(base_stats)
 
 
 ## World-space collision box; triggers and debug hitboxes read this.
@@ -337,14 +346,14 @@ func _jump_velocity() -> float:
 	return ability.jump_velocity_override() if ability != null else NAN
 
 
-func _finish_tick(was_on_floor: bool, input_frame: PlayerInputFrame) -> void:
-	_update_contacts(was_on_floor)
+func _finish_tick(was_on_floor: bool, input_frame: PlayerInputFrame, sim_delta: float) -> void:
+	_update_contacts(was_on_floor, sim_delta)
 	carrier.update(input_frame)
 	if move_state != MovementState.DASH:
 		move_state = _read_move_state()
 
 
-func _update_contacts(was_on_floor: bool) -> void:
+func _update_contacts(was_on_floor: bool, sim_delta: float) -> void:
 	var on_floor := is_on_floor()
 	if on_floor:
 		_notify_stood_on()
@@ -355,7 +364,7 @@ func _update_contacts(was_on_floor: bool) -> void:
 
 	if not on_floor:
 		was_airborne = true
-		fall_duration += get_physics_process_delta_time()
+		fall_duration += sim_delta
 	else:
 		fall_duration = 0.0
 

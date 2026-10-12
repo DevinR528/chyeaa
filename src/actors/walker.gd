@@ -61,8 +61,8 @@ func _physics_process(delta: float) -> void:
 		facing = -facing
 		queue_redraw()
 	velocity.x = facing * speed
-	_fall(delta)
-	move_and_slide()
+	_fall(SimStep.delta(self, delta))
+	SimStep.slide(self)
 	_sync_physics_transform()
 
 

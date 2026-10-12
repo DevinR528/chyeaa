@@ -78,11 +78,12 @@ func _physics_process(delta: float) -> void:
 	if frozen:
 		constant_linear_velocity = Vector2.ZERO
 		return
-	var motion_delta := delta if power == null or power.motion_runs() else 0.0
+	var sim_delta := SimStep.delta(self, delta)
+	var motion_delta := sim_delta if power == null or power.motion_runs() else 0.0
 	if falling != null:
-		falling.tick(delta)
+		falling.tick(sim_delta)
 		if falling.state == FallingBehavior.State.FALLING:
-			_fall(delta)
+			_fall(sim_delta)
 		elif falling.state != FallingBehavior.State.LANDED:
 			_place(motion_delta)
 	else:
@@ -91,11 +92,12 @@ func _physics_process(delta: float) -> void:
 		spin.advance(motion_delta)
 		_place_carried()
 	_sync_physics_transform()
+	# Divide by the real delta: carry velocity is displacement per physics tick.
 	constant_linear_velocity = (global_position - _previous_global) / delta
 	_previous_global = global_position
 	if breakable != null:
 		var was_present := breakable.is_present()
-		breakable.tick(delta)
+		breakable.tick(sim_delta)
 		if breakable.is_present() != was_present:
 			_update_collision()
 

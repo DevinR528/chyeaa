@@ -5,6 +5,9 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 
 - `locomotion_smoke.gd` — input latching, run, jump, dash, coyote, buffer, jump
   cut, and Pogo's constant physical speed during its visual stride.
+- `run_smoke.gd` — stack caps, every build formula, summary text, no compounding
+  across a character switch, jump-height apex, and slow-time distance at an
+  unchanged physics tick rate.
 - `demo_room_smoke.gd` — spawn, landing, character switching and surfaces, and
   death, exit, and fall restarts in the demo room. Does not pin authored room content.
 - `abilities_smoke.gd` — grapple latch, pull, jump-off, and solid block; pogo down

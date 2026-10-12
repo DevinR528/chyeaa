@@ -179,7 +179,7 @@ func _update_attached(delta: float, input: PlayerInputFrame) -> void:
 		latched = body.room.has_tile(hook, PhysicsLayers.GRAPPLE)
 	if not latched:
 		_release(false)
-		body.move_and_slide()
+		SimStep.slide(body)
 		return
 
 	if not boosted:
@@ -203,7 +203,7 @@ func _update_attached(delta: float, input: PlayerInputFrame) -> void:
 		_release(true)
 	elif signf(chest().x - hook.x) == direction:
 		_release(false)
-	body.move_and_slide()
+	SimStep.slide(body)
 
 
 func _cancel() -> void:

@@ -28,6 +28,8 @@ const NO_RESTART := -1
 ## Cycled with `next_character`. Order matches the prototype: Standard, Grappler, Pogo.
 @export var characters: Array[PackedScene] = []
 @export var character_index := 1
+## Stacks for this run, kept off whichever character is currently spawned.
+var build := RunBuild.new()
 
 var player: PlayerBody
 var hitstop_left := 0.0
@@ -69,11 +71,22 @@ func switch_character(index: int) -> void:
 	player.crushed.connect(_queue_restart.bind(RestartReason.DEATH))
 	player.hurt.connect(_queue_restart.bind(RestartReason.DEATH).unbind(1))
 	add_child(player)
+	apply_build()
 	room.use_surfaces(player.uses_grapple_surfaces, player.uses_pogo_surfaces)
 	camera.target = player
 	camera.frame_room(room.pixel_rect())
 	_respawn()
 	character_changed.emit(index)
+
+
+## Writes this run's stats onto the current character's baseline and stores the
+## sim scale on the room. A second call does not stack the modifiers again.
+func apply_build() -> void:
+	if player == null:
+		return
+	player.apply_build(build)
+	if room != null:
+		room.sim_scale = build.time_scale
 
 
 func restart(reason: RestartReason) -> void:

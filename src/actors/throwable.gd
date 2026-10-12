@@ -178,13 +178,14 @@ func drop() -> void:
 func _physics_process(delta: float) -> void:
 	if frozen or state == State.CARRIED:
 		return
+	var sim_delta := SimStep.delta(self, delta)
 	_apply_contacts()
-	_fall(delta)
+	_fall(sim_delta)
 	var before := velocity
-	move_and_slide()
+	SimStep.slide(self)
 	_sync_physics_transform()
 	_bounce(before)
-	_settle(delta)
+	_settle(sim_delta)
 
 
 func _on_contact_touched(other: Node2D) -> void:

@@ -311,7 +311,7 @@ Acceptance:
 
 ## 6A. Pure run-build model
 
-Status: ready and parallel-safe. No UI or checkpoint in this subtask.
+Status: complete. No UI or checkpoint in this subtask.
 
 Prototype sources:
 
