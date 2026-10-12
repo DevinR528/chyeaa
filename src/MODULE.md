@@ -66,9 +66,10 @@ Typed GDScript only. Scenes and imported assets do not live here.
 
 Code that real art or animation will replace is grouped in
 `#region Placeholder visuals` blocks with a note on what replaces it.
-- `run/` — `RunBuild` stack counts and the `SimStep` gameplay delta. Stacks live
-  on the run, not the player. Slow Time scales that delta; `Engine.time_scale`
-  stays 1 so UI, audio, and presentation keep real time.
+- `run/` — `RunBuild` stack counts, `SimStep` gameplay delta, and the potion
+  belt. Stacks live on the run, not the player. Slow Time scales that delta;
+  `Engine.time_scale` stays 1. Checkpoint potions plant a respawn the room reset
+  does not clear; the exit does.
 - `tools/` — migration and ongoing import scripts.
   `import_demo_room.gd` already ran; re-running overwrites Godot edits to the demo room.
   `import_demo_entities.gd` already ran; re-running replaces the demo room's `Props` node.

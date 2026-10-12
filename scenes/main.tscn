@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://cbfqdxl45bu0a" path="res://scenes/backgrounds/eroded_earth.tscn" id="8_backdrop"]
 [ext_resource type="PackedScene" path="res://scenes/presentation/game_audio.tscn" id="9_audio"]
 [ext_resource type="PackedScene" path="res://scenes/presentation/vignette.tscn" id="10_vignette"]
+[ext_resource type="PackedScene" path="res://scenes/ui/run_ui.tscn" id="11_ui"]
 
 [node name="Main" type="Node2D" unique_id=36488909 node_paths=PackedStringArray("room", "camera", "backdrop", "audio")]
 process_physics_priority = -10
@@ -49,3 +50,6 @@ runner = NodePath("..")
 [node name="Vignette" parent="." node_paths=PackedStringArray("runner", "camera") instance=ExtResource("10_vignette")]
 runner = NodePath("..")
 camera = NodePath("../Camera")
+
+[node name="RunUI" parent="." node_paths=PackedStringArray("runner") instance=ExtResource("11_ui")]
+runner = NodePath("..")

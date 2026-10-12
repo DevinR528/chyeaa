@@ -345,7 +345,7 @@ Acceptance:
 
 ## 6B. Checkpoint, potion UI, HUD, and pause
 
-Status: blocked by Task 6A.
+Status: complete. Reward flow and room switching stay out of scope.
 
 Prototype sources:
 

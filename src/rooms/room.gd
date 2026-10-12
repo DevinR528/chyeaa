@@ -86,9 +86,35 @@ func kill_plane_y() -> float:
 	return pixel_rect().end.y + KILL_PLANE_DEPTH
 
 
-## Where the spawned player's feet rest.
+## Planted checkpoint feet, or null when respawn uses the Spawn marker.
+## Room resets do not clear this.
+var checkpoint: Variant = null
+
+
+## Where the spawned player's feet rest. A planted checkpoint wins over the marker.
 func spawn_feet() -> Vector2:
+	if checkpoint is Vector2:
+		return checkpoint
 	return spawn.global_position
+
+
+func set_checkpoint(feet: Vector2) -> void:
+	checkpoint = _clamp_feet(feet)
+
+
+func clear_checkpoint() -> void:
+	checkpoint = null
+
+
+func _clamp_feet(feet: Vector2) -> Vector2:
+	var rect := pixel_rect()
+	if not rect.has_area():
+		return feet
+	var tile := MovementStats.TILE
+	return Vector2(
+		clampf(feet.x, rect.position.x + tile, rect.end.x - tile * 2.0),
+		clampf(feet.y, rect.position.y + tile, rect.end.y - tile * 2.0),
+	)
 
 
 ## Grapple and pogo tiles and props exist only for characters that use them.

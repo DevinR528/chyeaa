@@ -30,6 +30,8 @@ const NO_RESTART := -1
 @export var character_index := 1
 ## Stacks for this run, kept off whichever character is currently spawned.
 var build := RunBuild.new()
+## Potions for `build`. A planted checkpoint lives here, not on the player.
+var belt := PotionBelt.new()
 
 var player: PlayerBody
 var hitstop_left := 0.0
@@ -79,19 +81,48 @@ func switch_character(index: int) -> void:
 	character_changed.emit(index)
 
 
-## Writes this run's stats onto the current character's baseline and stores the
-## sim scale on the room. A second call does not stack the modifiers again.
+## Writes this run's stats onto the current character's baseline, stores the sim
+## scale, and syncs potions. A second call does not stack the modifiers again.
 func apply_build() -> void:
-	if player == null:
+	if player != null:
+		player.apply_build(build)
+	if room == null:
 		return
-	player.apply_build(build)
-	if room != null:
-		room.sim_scale = build.time_scale
+	room.sim_scale = build.time_scale
+	belt.sync(build, room)
+	_drop_spent_potions()
+
+
+## Feet used when planting a checkpoint: body origin x, collision bottom y.
+func player_feet() -> Vector2:
+	return Vector2(player.global_position.x, player.body_rect().end.y)
+
+
+func drink_potion(id: RunBuild.Id) -> CheckpointUse:
+	if player == null or room == null:
+		return null
+	var record := belt.use(id, player_feet(), room)
+	_drop_spent_potions()
+	return record
 
 
 func restart(reason: RestartReason) -> void:
+	# Leaving through the exit drops a planted flag. Death and falls keep it.
+	if reason == RestartReason.EXIT and room != null:
+		belt.on_room_exit(room)
 	_respawn()
 	restarted.emit(reason)
+
+
+func _drop_spent_potions() -> void:
+	var spent := belt.spent()
+	if spent.is_empty() or room == null:
+		return
+	for id: RunBuild.Id in spent:
+		build.remove_stack(id)
+	if player != null:
+		player.apply_build(build)
+	belt.sync(build, room)
 
 
 func _respawn() -> void:
