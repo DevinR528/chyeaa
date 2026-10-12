@@ -239,11 +239,26 @@ func _on_contact_touched(other: Node2D) -> void:
 	if actor == null:
 		return
 	var target := actor.body_rect()
-	if actor.accepts_stomp() and ContactBox.is_stomp(body_rect().end.y, previous_feet_y, velocity.y, target):
+	var feet_y := body_rect().end.y
+	var decision := ""
+	if actor.accepts_stomp() and ContactBox.is_stomp(feet_y, previous_feet_y, velocity.y, target):
+		decision = "stomp"
 		_stomp_target = actor
 		_stomp_surface_y = target.position.y
 	elif actor.hurts(self):
+		decision = "hurt"
 		hurt.emit(actor)
+	if ContactLog.enabled and decision != "":
+		ContactLog.record({
+			"decision": decision,
+			"participants": [name, actor.name],
+			"player_rect": body_rect(),
+			"target_rect": target,
+			"player_velocity": velocity,
+			"target_velocity": actor.velocity,
+			"feet_y": feet_y,
+			"previous_feet_y": previous_feet_y,
+		})
 
 
 func _apply_stomp() -> void:

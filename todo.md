@@ -14,7 +14,7 @@ Next safe parallel wave:
 - [x] Screen shake and vignette (Task 5).
 - [x] Pure run-build and stat stacking model (Task 6A).
 - [x] Checkpoint, potion UI, HUD, and pause (Task 6B).
-- [ ] Runtime diagnostics (Task 7).
+- [x] Runtime diagnostics (Task 7).
 
 ## Use groups for room-wide broadcasts
 

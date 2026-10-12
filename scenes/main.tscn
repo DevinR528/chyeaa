@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/presentation/game_audio.tscn" id="9_audio"]
 [ext_resource type="PackedScene" path="res://scenes/presentation/vignette.tscn" id="10_vignette"]
 [ext_resource type="PackedScene" path="res://scenes/ui/run_ui.tscn" id="11_ui"]
+[ext_resource type="Script" path="res://src/debug/play_readout.gd" id="12_readout"]
 
 [node name="Main" type="Node2D" unique_id=36488909 node_paths=PackedStringArray("room", "camera", "backdrop", "audio")]
 process_physics_priority = -10
@@ -43,6 +44,10 @@ script = ExtResource("4_camera")
 [node name="ReachOverlay" type="Node2D" parent="." unique_id=559674077 node_paths=PackedStringArray("runner")]
 process_physics_priority = 25
 script = ExtResource("7_reach")
+runner = NodePath("..")
+
+[node name="PlayReadout" type="CanvasLayer" parent="." node_paths=PackedStringArray("runner")]
+script = ExtResource("12_readout")
 runner = NodePath("..")
 
 [node name="GameAudio" parent="." instance=ExtResource("9_audio")]

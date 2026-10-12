@@ -226,12 +226,35 @@ func _apply_contacts() -> void:
 ## only bounce a ball in flight.
 func _bounce(before: Vector2) -> void:
 	var in_flight := state == State.THROWN or state == State.SLIDING
+	var decisions: PackedStringArray = []
 	if in_flight and is_on_wall() and not is_zero_approx(before.x):
 		velocity.x = -before.x * wall_bounce
+		decisions.append("bounce_wall")
 	if state == State.THROWN and is_on_ceiling() and before.y < 0.0:
 		velocity.y = -before.y * ceiling_bounce
+		decisions.append("bounce_ceiling")
 	if is_on_floor() and before.y > min_bounce_speed:
 		velocity.y = -before.y * floor_bounce
+		decisions.append("bounce_floor")
+	if ContactLog.enabled and not decisions.is_empty():
+		ContactLog.record({
+			"decision": ", ".join(decisions),
+			"participants": [name, "tile"],
+			"normal": _bounce_normal(decisions, before),
+			"velocity_before": before,
+			"velocity_after": velocity,
+		})
+
+
+func _bounce_normal(decisions: PackedStringArray, before: Vector2) -> Vector2:
+	var normal := Vector2.ZERO
+	if decisions.has("bounce_floor"):
+		normal.y = -1.0
+	elif decisions.has("bounce_ceiling"):
+		normal.y = 1.0
+	if decisions.has("bounce_wall"):
+		normal.x = -signf(before.x)
+	return normal
 
 
 func _settle(delta: float) -> void:

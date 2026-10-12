@@ -380,7 +380,7 @@ Acceptance:
 
 ## 7. Runtime diagnostics
 
-Status: ready after APIs above settle.
+Status: complete. No tuning panel and no profiler.
 
 Prototype sources:
 

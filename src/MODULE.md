@@ -60,6 +60,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
   camera transform.
 - `debug/` — game-specific runtime overlays and readouts. `ReachOverlay` draws
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
+  `PlayReadout` is the same debug toggle: FPS, velocity, grounded, move and
+  ability state, coyote, jump buffer, dash cooldown, and the kind under the
+  feet. `ContactLog` records stomp, hurt, and bounce decisions only when enabled.
 - `physics_layers.gd` — named collision layer bits: world, hazard, exit, fall,
   player, contact, grapple, pogo. Grapple and pogo are sensor layers (mask 0).
   The player body is on its own layer, never world.

@@ -10,6 +10,8 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   unchanged physics tick rate.
 - `run_ui_smoke.gd` — checkpoint plant, replace, undo without a refund, unequip,
   death and fall respawn, exit cleanup, pause processing, and the potion picker.
+- `debug_smoke.gd` — a fixed run matches with the readout hidden or shown, and
+  one stomp is captured as a contact record.
 - `demo_room_smoke.gd` — spawn, landing, character switching and surfaces, and
   death, exit, and fall restarts in the demo room. Does not pin authored room content.
 - `abilities_smoke.gd` — grapple latch, pull, jump-off, and solid block; pogo down
