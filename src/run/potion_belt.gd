@@ -4,7 +4,7 @@ extends RefCounted
 ## still there. Unspent potions that leave the build are cleared.
 
 ## Power-ups that are potions. `make` builds the live one.
-const POTION_IDS: Array[RunBuild.Id] = [RunBuild.Id.CHECKPOINT]
+const POTION_IDS: Array[RunBuild.Id] = [RunBuild.Id.CHECKPOINT, RunBuild.Id.REWIND]
 
 var potions: Dictionary[RunBuild.Id, Potion] = {}
 
@@ -13,6 +13,8 @@ static func make(id: RunBuild.Id) -> Potion:
 	match id:
 		RunBuild.Id.CHECKPOINT:
 			return CheckpointPotion.new()
+		RunBuild.Id.REWIND:
+			return RewindPotion.new()
 	return null
 
 
@@ -69,6 +71,7 @@ func choices(player: PlayerBody) -> Array[Dictionary]:
 			"id": id,
 			"name": RunBuild.name_of(id),
 			"uses": item.uses,
+			"action": item.action,
 			"blocked": blocked,
 		})
 	return rows

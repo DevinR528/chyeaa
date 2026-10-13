@@ -25,7 +25,7 @@ func _ready() -> void:
 	$Root.hide()
 
 
-func open_offer(offer: Array) -> void:
+func open_offer(offer: Array, level := 0) -> void:
 	_ids.clear()
 	for id: RunBuild.Id in offer:
 		_ids.append(id)
@@ -33,6 +33,8 @@ func open_offer(offer: Array) -> void:
 		return
 	_selected = 0
 	open = true
+	var title := $Root/Panel/Title as Label
+	title.text = "Level %d" % level if level > 0 else "Choose a power-up"
 	for index in _cards.size():
 		var card := _cards[index]
 		var shown := index < _ids.size()

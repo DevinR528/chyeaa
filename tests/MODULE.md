@@ -8,8 +8,15 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 - `run_smoke.gd` — stack caps, every build formula, summary text, no compounding
   across a character switch, jump-height apex, and slow-time distance at an
   unchanged physics tick rate.
+- `rewind_smoke.gd` — input replay of a platform, walker, and throwable; the rewind
+  trail and camera follow the scrub; checkpoint undo on the way back; drinking
+  rewind leaves the scrub open; commit spends a charge and cancel does not;
+  debug lists a free rewind; the death floor; and a printed replay time for a
+  generated room.
 - `run_ui_smoke.gd` — checkpoint plant, replace, undo without a refund, unequip,
-  death and fall respawn, exit cleanup, pause processing, and the potion picker.
+  death and fall respawn, exit cleanup, the centered pause menu, a seeded
+  generated run that advances after the reward, the same pause entry returning
+  to the demo, and the potion picker.
 - `debug_smoke.gd` — a fixed run matches with the readout hidden or shown, and
   one stomp is captured as a contact record.
 - `demo_room_smoke.gd` — spawn, landing, character switching and surfaces, and

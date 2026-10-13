@@ -91,6 +91,13 @@ func kill_plane_y() -> float:
 var checkpoint: Variant = null
 
 
+## Tile layers build collision at the end of the frame. A respawn in the same
+## frame as `_ready` reads the floor, so build it now.
+func build_collision() -> void:
+	for layer: TileMapLayer in [terrain, block_terrain, grapple_surfaces, pogo_surfaces]:
+		layer.update_internals()
+
+
 ## Where the spawned player's feet rest. A planted checkpoint wins over the marker.
 func spawn_feet() -> Vector2:
 	if checkpoint is Vector2:

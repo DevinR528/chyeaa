@@ -3,10 +3,10 @@ extends Area2D
 ## Body-to-body contact between the player, walkers, and throwables. Each body
 ## owns one and reacts to `touched` for itself; there is no central resolver.
 ##
-## Every box's `touched` arrives in the physics flush, before any body's tick, so
-## all handlers read the same end-of-tick state. Decide in the handler and change
-## your own body at the start of its tick; changing it in the handler would let
-## a handler that runs later read the change.
+## Every box's `touched` arrives before any body's tick, so all handlers read the
+## same end-of-tick state. Live play gets that from the physics flush. Rewind
+## polls, because `flush_queries` is not on the scripting API. Decide in the
+## handler and change your own body at the start of its tick.
 
 signal touched(other: Node2D)
 
@@ -17,6 +17,7 @@ const STOMP_BAND_FRACTION := 1.0 / 3.0
 const INSET := 0.01
 
 var _rect := RectangleShape2D.new()
+var _overlapping: Array[int] = []
 
 
 static func attach(body: CollisionObject2D, body_size: Vector2, offset := Vector2.ZERO) -> ContactBox:
@@ -48,16 +49,56 @@ static func is_stomp(feet_y: float, previous_feet_y: float, velocity_y: float, t
 
 
 func _ready() -> void:
-	area_entered.connect(func(area: Area2D) -> void:
-		if area is ContactBox:
-			touched.emit(area.get_parent()))
+	area_entered.connect(_on_area_entered)
+	area_exited.connect(_on_area_exited)
+
+
+func _on_area_entered(area: Area2D) -> void:
+	if not area is ContactBox or _overlapping.has(area.get_instance_id()):
+		return
+	_overlapping.append(area.get_instance_id())
+	touched.emit(area.get_parent())
+
+
+func _on_area_exited(area: Area2D) -> void:
+	_overlapping.erase(area.get_instance_id())
+
+
+## Edge-triggered, matching `area_entered`. Call before the bodies tick.
+func sync_overlaps() -> void:
+	if not monitoring or not is_inside_tree():
+		_overlapping.clear()
+		return
+	var shape_node := get_child(0) as CollisionShape2D
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.shape = _rect
+	params.transform = shape_node.global_transform
+	params.collision_mask = collision_mask
+	params.collide_with_areas = true
+	params.collide_with_bodies = false
+	params.exclude = [get_rid()]
+	var found: Array[int] = []
+	for hit in get_world_2d().direct_space_state.intersect_shape(params, 16):
+		var area := hit.collider as Area2D
+		if not area is ContactBox or not (area as ContactBox).monitorable:
+			continue
+		var id := area.get_instance_id()
+		found.append(id)
+		if not _overlapping.has(id):
+			touched.emit(area.get_parent())
+	_overlapping = found
+
+
+func clear_overlaps() -> void:
+	_overlapping.clear()
 
 
 func resize(body_size: Vector2) -> void:
 	_rect.size = body_size - Vector2.ONE * INSET * 2.0
 
 
-## Deferred: monitoring cannot change while the physics flush delivers signals.
+## Immediate: callers are ticks, not the flush, and a rewind runs many ticks
+## before the engine is idle again.
 func set_active(active: bool) -> void:
-	set_deferred(&"monitoring", active)
-	set_deferred(&"monitorable", active)
+	monitoring = active
+	monitorable = active

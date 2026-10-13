@@ -5,6 +5,7 @@ const Rooms := preload("res://tests/test_room_builder.gd")
 const STANDARD_SCENE := preload("res://scenes/player/standard.tscn")
 const POGO_SCENE := preload("res://scenes/player/pogo.tscn")
 const BLOCK_SCENE := preload("res://scenes/props/block.tscn")
+const REWARD_SCENE := preload("res://scenes/ui/reward_menu.tscn")
 
 var _failed := false
 var _restarts: Array[RoomRunner.RestartReason] = []
@@ -17,6 +18,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_check_roll_and_belt()
 	await _check_room()
+	await _check_generated_run()
 	paused = false
 	quit(1 if _failed else 0)
 
@@ -27,6 +29,10 @@ func _check_roll_and_belt() -> void:
 	_expect(
 		RunUI.line_for({"name": "Checkpoint", "uses": 1, "blocked": "Can't use it here"}) == "Checkpoint — Can't use it here",
 		"blocked potion line dropped the reason",
+	)
+	_expect(
+		RunUI.line_for({"name": "Rewind", "uses": 0, "free": true}) == "Rewind — free (debug)",
+		"debug rewind line showed a charge count",
 	)
 
 	var room := Rooms.make_room(root, func(_layers: Dictionary) -> void: pass)
@@ -197,9 +203,116 @@ func _check_room() -> void:
 	room.free()
 
 
+func _check_generated_run() -> void:
+	var room := Rooms.make_room(root, func(_layers: Dictionary) -> void: pass)
+	var camera := FollowCamera.new()
+	var runner := RoomRunner.new()
+	runner.room = room
+	runner.camera = camera
+	runner.characters = [STANDARD_SCENE]
+	runner.character_index = 0
+	var menu := REWARD_SCENE.instantiate() as RewardMenu
+	runner.reward_menu = menu
+	runner.add_child(camera)
+	root.add_child(menu)
+	root.add_child(runner)
+	var ui := RunUI.new()
+	ui.runner = runner
+	root.add_child(ui)
+	await process_frame
+
+	var home := runner.player.global_position
+	runner.player.global_position = home + Vector2(64, -32)
+	ui.open_pause()
+	_expect(ui.get_node(^"Pause/Center") is CenterContainer, "pause panel was not centered")
+	Input.action_press(&"move_down")
+	await process_frame
+	Input.action_release(&"move_down")
+	_expect(ui.pause_index == 1, "pause did not move to restart, index %d" % ui.pause_index)
+	Input.action_press(&"jump")
+	await process_frame
+	Input.action_release(&"jump")
+	_expect(not ui.pause_open, "restart left the pause menu open")
+	_expect(
+		runner.player.global_position.distance_to(home) < 8.0,
+		"restart moved to %s instead of %s" % [runner.player.global_position, home],
+	)
+	_expect(runner.build.stack_count(RunBuild.Id.TOP_SPEED) == 0, "restart cleared the build before a stack existed")
+
+	runner.build.add_stack(RunBuild.Id.TOP_SPEED)
+	_expect(runner.start_generated_run(1), "seed 1 did not generate a room")
+	_expect(runner.gen_active and runner.gen_level == 1 and runner.gen_seed == 1, "generated run did not start at level 1")
+	_expect(runner.build.stack_count(RunBuild.Id.TOP_SPEED) == 1, "entering a generated room dropped the build")
+	var cleared: Room = runner.room
+	var cleared_spawn := cleared.spawn_feet()
+
+	runner.restart(RoomRunner.RestartReason.EXIT)
+	_expect(menu.open, "generated exit did not open the reward")
+	_expect((menu.get_node(^"Root/Panel/Title") as Label).text == "Level 1", "reward omitted the level")
+	var picked: RunBuild.Id = menu._ids[menu._selected]
+	var picked_before := runner.build.stack_count(picked)
+	var speed_before := runner.build.stack_count(RunBuild.Id.TOP_SPEED)
+	menu.choose_selected()
+	for _frame in 3:
+		await process_frame
+	_expect(not menu.open, "picking a card left the reward open")
+	_expect(runner.gen_level == 2 and runner.gen_seed == 2, "next room was level %d seed %d" % [runner.gen_level, runner.gen_seed])
+	_expect(runner.room != cleared, "the exit reloaded the same room")
+	var speed_after := speed_before + (1 if picked == RunBuild.Id.TOP_SPEED else 0)
+	_expect(
+		runner.build.stack_count(RunBuild.Id.TOP_SPEED) == speed_after,
+		"the next room changed top speed to %d" % runner.build.stack_count(RunBuild.Id.TOP_SPEED),
+	)
+	_expect(
+		runner.build.stack_count(picked) == picked_before + 1,
+		"the picked card was not added (%s count %d)" % [
+			RunBuild.name_of(picked), runner.build.stack_count(picked),
+		],
+	)
+	_expect(not runner.room.spawn_feet().is_equal_approx(cleared_spawn), "the next room kept the previous spawn %s" % cleared_spawn)
+
+	for id: RunBuild.Id in RunBuild.MAX_STACKS:
+		while runner.build.stack_count(id) < int(RunBuild.MAX_STACKS[id]):
+			runner.build.add_stack(id)
+	runner.restart(RoomRunner.RestartReason.EXIT)
+	_expect(not menu.open, "a full build still opened a reward")
+	for _frame in 3:
+		await process_frame
+	_expect(runner.gen_level == 3 and runner.gen_seed == 3, "an empty offer did not advance, level %d seed %d" % [runner.gen_level, runner.gen_seed])
+
+	var kept_speed := runner.build.stack_count(RunBuild.Id.TOP_SPEED)
+	ui.open_pause()
+	_expect("Demo room" in _pause_text(ui), "generated pause still offered a generated run")
+	for _move in 2:
+		Input.action_press(&"move_down")
+		await process_frame
+		Input.action_release(&"move_down")
+	_expect(ui.pause_index == 2, "pause did not land on demo, index %d" % ui.pause_index)
+	Input.action_press(&"jump")
+	await process_frame
+	Input.action_release(&"jump")
+	_expect(not ui.pause_open and not runner.gen_active, "demo entry left the generated run active")
+	_expect(
+		runner.room.scene_file_path == "res://scenes/rooms/demo.tscn",
+		"demo entry loaded %s" % runner.room.scene_file_path,
+	)
+	_expect(runner.build.stack_count(RunBuild.Id.TOP_SPEED) == kept_speed, "returning to the demo dropped the build")
+
+	ui.free()
+	runner.free()
+	menu.free()
+
+
 func _cell_feet(room: Room, cell: Vector2i) -> Vector2:
 	var center := room.terrain.to_global(room.terrain.map_to_local(cell))
 	return center + Vector2(0, 4)
+
+
+func _pause_text(ui: RunUI) -> String:
+	var text := ""
+	for child in ui._pause_rows.get_children():
+		text += (child as Label).text + "\n"
+	return text
 
 
 func _picker_text(ui: RunUI) -> String:

@@ -60,6 +60,8 @@ var base_stats: MovementStats
 var room: Room
 ## True during hitstop: the tick is skipped and latched presses wait for the next live tick.
 var frozen := false
+## The room runner calls `tick`. While set, `_physics_process` does not also step.
+var driven := false
 
 var facing := 1.0
 var move_state := MovementState.FALL
@@ -79,6 +81,7 @@ var fall_duration := 0.0
 ## Feet at the start of the last tick; a stomp may sweep through a body's top.
 var previous_feet_y := 0.0
 var contact_box: ContactBox
+var _touch_sensor: Area2D
 
 var _stomp_target: RoomActor
 var _stomp_surface_y := 0.0
@@ -97,8 +100,8 @@ func _ready() -> void:
 		stats.set(property, stat_overrides[property])
 	base_stats = stats.copy()
 	air_jumps_left = stats.air_jumps
-	var touch_sensor := _add_sensor(&"TouchSensor", TOUCH_SENSOR_INSET, TRIGGER_LAYERS)
-	touch_sensor.body_shape_entered.connect(_on_touch_sensor_body_shape_entered)
+	_touch_sensor = _add_sensor(&"TouchSensor", TOUCH_SENSOR_INSET, TRIGGER_LAYERS)
+	_touch_sensor.body_shape_entered.connect(_on_touch_sensor_body_shape_entered)
 	var crush_sensor := _add_sensor(&"CrushSensor", CRUSH_SENSOR_INSET, PhysicsLayers.WORLD)
 	crush_sensor.body_entered.connect(func(_body: Node2D) -> void:
 		if crush_sensor.get_overlapping_bodies().size() >= 2:
@@ -111,6 +114,13 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if driven:
+		return
+	tick(delta, player_input.consume())
+
+
+## One movement step. `frame` is the input for this step; this does not consume.
+func tick(delta: float, frame: PlayerInputFrame) -> void:
 	if frozen:
 		return
 	if _ignore_motion_this_tick:
@@ -123,7 +133,7 @@ func _physics_process(delta: float) -> void:
 	var sim_delta := SimStep.delta(self, delta)
 	_apply_stomp()
 	previous_feet_y = body_rect().end.y
-	var input_frame := player_input.consume()
+	var input_frame := frame
 	var was_on_floor := is_on_floor()
 
 	_tick_timers(sim_delta, input_frame, was_on_floor)
@@ -186,6 +196,9 @@ func respawn(feet: Vector2, hold_motion := false) -> void:
 		dash_trail.clear()
 	force_update_transform()
 	reset_physics_interpolation()
+	# is_on_floor is cached from the last slide, and the held tick does not slide.
+	# Recompute it here so the first real step reads the spawn, not the death.
+	_settle_floor_state()
 	_ignore_motion_this_tick = hold_motion
 
 
@@ -206,6 +219,27 @@ func halt() -> void:
 
 func _clear_server_velocity() -> void:
 	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_LINEAR_VELOCITY, Vector2.ZERO)
+
+
+## Floor, wall, and ceiling flags from where the body stands now. A zero slide
+## lifted off the ground clears them; `apply_floor_snap` then sets the floor only
+## if one is within `floor_snap_length` under the feet. It does nothing while the
+## flag is already set, so the clear has to come first.
+func _settle_floor_state() -> void:
+	if not is_inside_tree() or PhysicsServer2D.body_get_space(get_rid()) == RID():
+		return
+	var saved_snap := floor_snap_length
+	var saved_position := global_position
+	floor_snap_length = 0.0
+	velocity = Vector2.ZERO
+	global_position.y -= 4.0
+	move_and_slide()
+	floor_snap_length = saved_snap
+	velocity = Vector2.ZERO
+	global_position = saved_position
+	force_update_transform()
+	apply_floor_snap()
+	_clear_server_velocity()
 
 
 func apply_jump(
@@ -262,6 +296,24 @@ func _add_sensor(sensor_name: StringName, inset: float, mask: int) -> Area2D:
 	sensor.add_child(shape)
 	add_child(sensor)
 	return sensor
+
+
+## Replay has no physics flush between steps, so the touch sensor is queried
+## directly. Reporting the same tile again is harmless: the runner keeps the
+## first restart reason.
+func sync_trigger_contacts() -> void:
+	if _touch_sensor == null or not _touch_sensor.monitoring or not is_inside_tree():
+		return
+	var shape_node := _touch_sensor.get_child(0) as CollisionShape2D
+	var params := PhysicsShapeQueryParameters2D.new()
+	params.shape = shape_node.shape
+	params.transform = shape_node.global_transform
+	params.collision_mask = _touch_sensor.collision_mask
+	params.collide_with_bodies = true
+	params.collide_with_areas = false
+	params.exclude = [get_rid()]
+	for hit in get_world_2d().direct_space_state.intersect_shape(params, 8):
+		_on_touch_sensor_body_shape_entered(hit.rid, null, 0, 0)
 
 
 ## Tile layers report the touched tile's physics layer through the body RID.

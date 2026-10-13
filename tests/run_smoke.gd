@@ -46,7 +46,13 @@ func _check_offer() -> void:
 	var offer := full.roll_offer(3, func() -> float: return 0.0)
 	_expect(offer.size() == 3, "offer was not three cards: %s" % [offer])
 	_expect(not offer.has(RunBuild.Id.CHECKPOINT), "offer included a maxed checkpoint")
-	_expect(not offer.has(RunBuild.Id.REWIND), "offer included rewind before it can be drunk")
+	var only_rewind := RunBuild.new()
+	for id: RunBuild.Id in RunBuild._ORDER:
+		if id == RunBuild.Id.REWIND:
+			continue
+		while only_rewind.stack_count(id) < RunBuild.MAX_STACKS[id]:
+			only_rewind.add_stack(id)
+	_expect(only_rewind.roll_offer() == [RunBuild.Id.REWIND], "a build with room only for rewind did not offer it")
 	var again := full.roll_offer(3, func() -> float: return 0.0)
 	_expect(offer == again, "the same rolls did not give the same offer")
 	for id: RunBuild.Id in RunBuild._ORDER:

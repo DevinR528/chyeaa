@@ -176,6 +176,13 @@ func drop() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if driven:
+		return
+	tick(delta)
+
+
+## One ballistic step. Carried balls stay on the carrier.
+func tick(delta: float) -> void:
 	if frozen or state == State.CARRIED:
 		return
 	var sim_delta := SimStep.delta(self, delta)

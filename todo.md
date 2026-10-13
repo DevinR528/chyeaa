@@ -15,6 +15,10 @@ Next safe parallel wave:
 - [x] Pure run-build and stat stacking model (Task 6A).
 - [x] Checkpoint, potion UI, HUD, and pause (Task 6B).
 - [x] Runtime diagnostics (Task 7).
+- [ ] Input remap. A pause Controls page edits Godot's InputMap: replace a
+  key without wiping the joypad button, and the reverse, and leave stick
+  axes alone. Save the result to `user://input.cfg` and apply it on boot.
+  Do not port `../src/input/bindings.ts`. The Nintendo HID profile stays out.
 
 ## Use groups for room-wide broadcasts
 

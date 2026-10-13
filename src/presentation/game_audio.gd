@@ -117,15 +117,21 @@ func _on_character_changed(_index: int) -> void:
 
 
 func _on_dashed(_facing: float) -> void:
+	if _replay_muted():
+		return
 	_play_one_shot(&"dash", dash_stream, 0.55, 0.99)
 
 
 func _on_landed(airtime: float) -> void:
+	if _replay_muted():
+		return
 	var options := land_options(airtime)
 	_play_one_shot(&"land", land_stream, options.volume, options.pitch)
 
 
 func _on_transition_started(reason: RoomRunner.RestartReason) -> void:
+	if _replay_muted():
+		return
 	if reason == RoomRunner.RestartReason.EXIT:
 		_play_one_shot(&"exit", exit_stream, 0.65)
 	else:
@@ -133,10 +139,14 @@ func _on_transition_started(reason: RoomRunner.RestartReason) -> void:
 
 
 func _on_side_bashed(_direction: float) -> void:
+	if _replay_muted():
+		return
 	_play_one_shot(&"bash", bash_stream, 0.7)
 
 
 func _on_frame_event(event_name: StringName, _clip: StringName, _frame_index: int) -> void:
+	if _replay_muted():
+		return
 	match event_name:
 		&"footstep_right":
 			_play_footstep(&"footstep_right", footstep_right_stream)
@@ -147,6 +157,10 @@ func _on_frame_event(event_name: StringName, _clip: StringName, _frame_index: in
 func _on_clip_changed(clip: StringName) -> void:
 	if clip != &"run":
 		_stop_footstep()
+
+
+func _replay_muted() -> bool:
+	return runner != null and runner.replaying
 
 
 func _play_one_shot(

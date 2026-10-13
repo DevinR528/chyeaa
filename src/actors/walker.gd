@@ -51,6 +51,13 @@ func hurts(_player: PlayerBody) -> bool:
 
 
 func _physics_process(delta: float) -> void:
+	if driven:
+		return
+	tick(delta)
+
+
+## One patrol step. `delta` is the engine physics delta; the fall uses sim time.
+func tick(delta: float) -> void:
 	if frozen:
 		return
 	if _pending_death != NO_DEATH:

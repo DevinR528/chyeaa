@@ -134,9 +134,6 @@ static func name_of(id: Id) -> String:
 func roll_offer(count := 3, rng: Callable = Callable()) -> Array[Id]:
 	var pool: Array[Id] = []
 	for id: Id in _ORDER:
-		# Rewind has no drink yet, so offering it would add a stack the picker cannot use.
-		if id == Id.REWIND:
-			continue
 		if stack_count(id) < MAX_STACKS[id]:
 			pool.append(id)
 	var random := rng if rng.is_valid() else func() -> float: return randf()

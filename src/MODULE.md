@@ -15,7 +15,10 @@ Typed GDScript only. Scenes and imported assets do not live here.
 - `input/` — action sampling, press latching, and aim.
 - `rooms/` — `Room` (tile layers, cell kind and solidity queries, kill plane,
   out-of-bounds walls) and `RoomRunner` (character spawn and switching, hitstop,
-  restarts on fall, exit, and death). Kind and solidity ask the physics space,
+  restarts on fall, exit, and death). Pause can start a generated run, and that
+  same entry returns to the authored demo while one is active. The exit
+  offers a reward, then the next room uses the following seed at the same
+  difficulty. Kind and solidity ask the physics space,
   so a shape counts wherever it reaches. Grapple and pogo tiles are sensor
   layers; props with those surfaces are queried by their box, not those layers.
 - `props/` — `TileProp`: a box with a surface kind (solid, grapple, exit, death,
@@ -58,8 +61,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
   replacing footstep voice. `ScreenShake` applies wall-time camera offset after
   Pogo hitstop; `Vignette` is a screen-space veil centered through the final
   camera transform. `RoomFx` is the death shatter and exit confetti; the runner
-  waits out that effect before respawning or opening the reward menu. `DashTrail`
-  leaves fading body copies during a dash. Both draws are placeholder visuals.
+  waits out that effect before respawning or opening the reward menu.   `DashTrail`
+  leaves fading body copies during a dash. `RewindTrail` draws the rewind log up
+  to the scrub point while a debug overlay is visible. Both draws are placeholder visuals.
 - `debug/` — game-specific runtime overlays and readouts. `ReachOverlay` draws
   jump, dash, grapple, pogo, and wall-probe guides for the current character.
   `PlayReadout` is the same debug toggle: FPS, velocity, grounded, move and
@@ -75,7 +79,8 @@ Code that real art or animation will replace is grouped in
 - `run/` — `RunBuild` stack counts and the exit offer (`roll_offer`), `SimStep` gameplay delta, and the potion
   belt. Stacks live on the run, not the player. Slow Time scales that delta;
   `Engine.time_scale` stays 1. Checkpoint potions plant a respawn the room reset
-  does not clear; the exit does.
+  does not clear; the exit does. `RewindLog` stores the input of each step the
+  runner takes; a scrub replays those steps. Rewind spends a charge on commit.
 - `tools/` — migration and ongoing import scripts.
   `import_demo_room.gd` already ran; re-running overwrites Godot edits to the demo room.
   `import_demo_entities.gd` already ran; re-running replaces the demo room's `Props` node.

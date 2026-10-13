@@ -22,6 +22,8 @@ const MAX_FALL := 200.0 * TILE
 
 ## True during hitstop: the whole room holds still, not just the player.
 var frozen := false
+## The room runner calls `tick`. While set, `_physics_process` does not also step.
+var driven := false
 ## Rest position in the parent's space, taken from where the actor was placed.
 var home := Vector2.ZERO
 var contact_box: ContactBox

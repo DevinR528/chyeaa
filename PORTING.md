@@ -41,38 +41,39 @@ change, and this boot check:
 
 Current suites are `abilities_smoke`, `actors_smoke`, `art_smoke`,
 `audio_smoke`, `block_terrain_smoke`, `debug_smoke`, `demo_room_smoke`,
-`locomotion_smoke`, `pieces_smoke`, `presentation_smoke`, `props_smoke`,
-`reach_overlay_smoke`, `run_smoke`, `run_ui_smoke`, and `triggers_smoke`.
+`fx_smoke`, `locomotion_smoke`, `pieces_smoke`, `presentation_smoke`, `props_smoke`,
+`reach_overlay_smoke`, `rewind_smoke`, `run_smoke`, `run_ui_smoke`, and `triggers_smoke`.
 
 ## Still to do
 
 Tasks 1-7 below are done. This is what is still missing if the Godot game is
 supposed to stand in for `../src`.
 
-### A run does not advance
+### A run advances from pause
 
-The room generator works. `RoomGenerator.generate_layout` / `build_room` stitch
-imported pieces, and `pieces_smoke` spawns a player in one of those rooms.
-Nothing the player launches calls it. `scenes/main.tscn` always plays the
-authored demo.
+`scenes/main.tscn` still boots the authored demo. Pause can start a generated
+run: difficulty 3, piece count `[1, 2]`, random seed (tests pass one). The
+exit effect opens the reward menu titled with the level, then the next room
+uses `seed + 1` at the same difficulty. An empty offer skips the menu. A failed
+seed tries the next 5, then the current room restarts. There is still no room
+graph, overworld, or difficulty that climbs.
 
-Leaving through the exit opens the reward menu (`scenes/ui/reward_menu.tscn`),
-adds the picked stack, and restarts that same room. The prototype
-(`world.ts` `_on_gen_cleared`) then generates the next level. There is no room
-graph, overworld, multi-path fallback, or difficulty that climbs with the level.
-
-There is no collected bank and no build screen (`../src/ui/build_screen.ts`:
-drag cards into the build, or skip them into the bank). The HUD bank count is
-always 0. Pause is Resume plus the summary. The prototype pause also restarts
-the room, opens the build screen, and remaps controls.
+There is no collected bank and no build screen (`../src/ui/build_screen.ts`).
+The HUD bank count is always 0. Pause is Resume, Restart room, and Generated
+run. During a generated run that last entry is Demo room and reloads the
+authored demo; the build stays. Input remap is not on that menu; see `todo.md`.
 
 ### Potions and rewind
 
-Checkpoint is the only potion you can drink. Rewind is an id on the build and
-is left out of offers, because the drink, the input log, the scrub screen, and
-the trail are not ported (`../src/level_manager/rewind.ts`,
-`../src/powerup/rewind.ts`, `../src/ui/rewind_screen.ts`,
-`../src/debug/rewind_trail_overlay.ts`).
+Checkpoint and rewind can both be drunk. Rewind opens a scrub screen and
+replays the input log; the charge is spent on commit, not on open or cancel.
+With a debug overlay up (or `keep_rewind_history`), the picker always lists
+Rewind and the commit is free. A death starts a new log unless that debug
+history is on. `RewindTrail` draws that log while a debug overlay is visible.
+
+Scrubbing two minutes (7200 steps) of a generated room replays in about 560ms.
+That is more than a couple of frames. Per-second snapshots, so a backward
+scrub resimulates only from the previous second, are not built yet.
 
 `ContactLog` is not that log. It is the prototype's debug contact print
 (`../src/physics/debug.ts` `log_contact`): who hit whom, the boxes, and whether

@@ -8,9 +8,16 @@ extends Camera2D
 var shake := ScreenShake.new()
 
 
+var _rewind_hold := false
+var _smoothing_before := false
+
+
 func _physics_process(_delta: float) -> void:
-	if target != null:
-		global_position = target.global_position
+	if target == null:
+		return
+	global_position = target.global_position
+	if _rewind_hold:
+		_commit_scroll()
 
 
 func _process(delta: float) -> void:
@@ -36,9 +43,34 @@ func frame_room(rect: Rect2) -> void:
 	limit_bottom = ceili(rect.end.y)
 
 
-## Centers on the target with no easing (room entry and respawn).
+## Rewind runs while the tree is paused, so smoothing would keep the old frame.
+func hold_for_rewind(held: bool) -> void:
+	if held == _rewind_hold:
+		return
+	_rewind_hold = held
+	if held:
+		_smoothing_before = position_smoothing_enabled
+		position_smoothing_enabled = false
+		process_mode = Node.PROCESS_MODE_ALWAYS
+		snap_to_target()
+	else:
+		position_smoothing_enabled = _smoothing_before
+		process_mode = Node.PROCESS_MODE_INHERIT
+
+
+## Centers on the target with no easing (room entry, respawn, and rewind).
 func snap_to_target() -> void:
+	if target == null:
+		return
 	global_position = target.global_position
-	align()
+	_commit_scroll()
+
+
+func _commit_scroll() -> void:
+	var was := position_smoothing_enabled
+	position_smoothing_enabled = false
 	reset_smoothing()
+	force_update_scroll()
 	reset_physics_interpolation()
+	if not _rewind_hold:
+		position_smoothing_enabled = was

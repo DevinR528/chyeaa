@@ -54,6 +54,8 @@ var carry_offset := Vector2.ZERO
 
 var _shape := RectangleShape2D.new()
 var _previous_global := Vector2.ZERO
+## The room runner calls `tick`. While set, `_physics_process` does not also step.
+var driven := false
 
 
 func _ready() -> void:
@@ -75,6 +77,13 @@ func _ready() -> void:
 ## Carriers process before what they carry (tree order), so a carried prop's
 ## velocity includes its carrier's motion this tick.
 func _physics_process(delta: float) -> void:
+	if driven:
+		return
+	tick(delta)
+
+
+## One motion step. `delta` is the engine physics delta used for carry velocity.
+func tick(delta: float) -> void:
 	if frozen:
 		constant_linear_velocity = Vector2.ZERO
 		return
