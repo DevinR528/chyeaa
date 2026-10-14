@@ -82,3 +82,6 @@ transition clips arrive.
    - we catch on transitions from green solid blocks to art tileset
    - same for jumping and "catching" the edge
    - floats a solid pixel or 2 above ground
+ - vignette still isn't always centered on player...
+ - location trail doesn't clear when it should
+ - we don't want infinite rewind...

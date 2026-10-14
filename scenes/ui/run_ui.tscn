@@ -1,11 +1,11 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://negqw87r1741"]
 
-[ext_resource type="Script" path="res://src/ui/run_ui.gd" id="1_ui"]
+[ext_resource type="Script" uid="uid://dglepx80hpciv" path="res://src/ui/run_ui.gd" id="1_ui"]
 [ext_resource type="PackedScene" path="res://scenes/ui/reward_menu.tscn" id="2_reward"]
 
-[node name="RunUI" type="CanvasLayer"]
-layer = 30
+[node name="RunUI" type="CanvasLayer" unique_id=1163609531]
 process_mode = 3
+layer = 30
 script = ExtResource("1_ui")
 
-[node name="RewardMenu" parent="." instance=ExtResource("2_reward")]
+[node name="RewardMenu" parent="." unique_id=178000278 instance=ExtResource("2_reward")]

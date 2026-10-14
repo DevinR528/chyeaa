@@ -67,9 +67,12 @@ authored demo; the build stays. Input remap is not on that menu; see `todo.md`.
 
 Checkpoint and rewind can both be drunk. Rewind opens a scrub screen and
 replays the input log; the charge is spent on commit, not on open or cancel.
-With a debug overlay up (or `keep_rewind_history`), the picker always lists
-Rewind and the commit is free. A death starts a new log unless that debug
-history is on. `RewindTrail` draws that log while a debug overlay is visible.
+The log records only while a debug overlay is up (`keep_rewind_history`
+counts) or a Rewind charge is equipped, and the trail is stored only while
+that overlay is visible. A debug death or fall stays on the log. A win, a
+pause restart, and a move to the demo or the next generated room start a new
+one. With a debug overlay up, the picker always lists Rewind and the commit
+is free. `RewindTrail` draws the log while a debug overlay is visible.
 
 Scrubbing two minutes (7200 steps) of a generated room replays in about 560ms.
 That is more than a couple of frames. Per-second snapshots, so a backward

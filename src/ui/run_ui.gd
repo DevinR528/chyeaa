@@ -5,11 +5,14 @@ extends CanvasLayer
 
 @export var runner: RoomRunner
 
-const PAUSE_ACTIONS: Array[String] = ["Resume", "Restart room", "Generated run"]
+const OPTION_MENU := preload("res://scenes/ui/option_menu.tscn")
+
+const PAUSE_ACTIONS: Array[String] = ["Resume", "Restart room", "Generated run", "Volume"]
 
 var ticks := 0
 var picker_open := false
 var pause_open := false
+var option_open := false
 var pause_index := 0
 
 var _rows: Array[Dictionary] = []
@@ -21,6 +24,7 @@ var _pause_rows: VBoxContainer
 var _picker: Control
 var _picker_rows: VBoxContainer
 var _rewind: RewindScreen
+var _opt_menu: OptionMenu
 
 
 func _ready() -> void:
@@ -32,16 +36,22 @@ func _ready() -> void:
 	_pause = _make_pause()
 	_pause_summary = _pause.get_node(^"Center/Panel/Summary") as Label
 	_pause_rows = _pause.get_node(^"Center/Panel/Actions") as VBoxContainer
+
 	_picker = _make_panel(&"Picker")
 	_picker.get_node(^"Panel/Title").text = "Potions"
 	_picker_rows = _picker.get_node(^"Panel/Rows") as VBoxContainer
-	_pause.hide()
-	_picker.hide()
+
 	_rewind = RewindScreen.new()
 	_rewind.name = &"Rewind"
 	_rewind.bind_runner(runner)
 	add_child(_rewind)
 
+	_opt_menu = OPTION_MENU.instantiate() as OptionMenu
+	add_child(_opt_menu)
+
+	_opt_menu.hide()
+	_pause.hide()
+	_picker.hide()
 
 func _process(_delta: float) -> void:
 	ticks += 1
@@ -50,6 +60,9 @@ func _process(_delta: float) -> void:
 		return
 	if picker_open:
 		_steer_picker()
+		return
+	if option_open:
+		_steer_options()
 		return
 	if pause_open:
 		_steer_pause()
@@ -109,6 +122,22 @@ func open_rewind() -> void:
 	get_tree().paused = true
 
 
+func open_option() -> void:
+	if pause_open:
+		_pause.hide()
+	_opt_menu.show()
+	option_open = true
+
+
+func close_option() -> void:
+	option_open = false
+	_opt_menu.hide()
+	if not pause_open:
+		print("not pause open")
+		get_tree().paused = false
+	else:
+		open_pause()
+
 func show_choices(rows: Array[Dictionary]) -> void:
 	_rows = rows
 	_selected = 0
@@ -157,6 +186,12 @@ func _steer_pause() -> void:
 
 func _confirm_pause() -> void:
 	var action := pause_index
+
+	if "Volume" == PAUSE_ACTIONS[action]:
+		open_option()
+		print("STUFF AND THANGS")
+		return
+
 	close_pause()
 	if runner == null:
 		return
@@ -167,6 +202,22 @@ func _confirm_pause() -> void:
 			runner.return_to_demo()
 		else:
 			runner.start_generated_run()
+
+func _steer_options() -> void:
+	if Input.is_action_just_pressed(&"move_up"):
+		var next = _opt_menu.find_next_valid_focus()
+		if next: next.grab_focus()
+	elif Input.is_action_just_pressed(&"move_down"):
+		var next = _opt_menu.find_next_valid_focus()
+		if next: next.grab_focus()
+	elif Input.is_action_just_pressed(&"jump"):
+		if _opt_menu.is_exit_pressed():
+			close_option()
+		else:
+			# handle more strange options...
+			pass
+	elif Input.is_action_just_pressed(&"pause"):
+		close_option()
 
 
 func _pause_label(index: int) -> String:

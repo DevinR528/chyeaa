@@ -11,8 +11,9 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 - `rewind_smoke.gd` — input replay of a platform, walker, and throwable; the rewind
   trail and camera follow the scrub; checkpoint undo on the way back; drinking
   rewind leaves the scrub open; commit spends a charge and cancel does not;
-  debug lists a free rewind; the death floor; and a printed replay time for a
-  generated room.
+  debug lists a free rewind; the death floor; a restart with debug history
+  starts a fresh log; a run with no rewind records nothing; and a printed
+  replay time for a generated room.
 - `run_ui_smoke.gd` — checkpoint plant, replace, undo without a refund, unequip,
   death and fall respawn, exit cleanup, the centered pause menu, a seeded
   generated run that advances after the reward, the same pause entry returning

@@ -49,6 +49,10 @@ func _check_replay() -> void:
 	root.add_child(ui)
 	await physics_frame
 
+	_expect(
+		not runner.log.recording and runner.log.steps.is_empty() and runner.log.trail.is_empty(),
+		"a run with no rewind recorded %d steps" % runner.log.steps.size(),
+	)
 	_expect(not runner.get_node(^"RewindTrail").visible, "rewind trail showed without the debug overlay")
 	var reach := ReachOverlay.new()
 	reach.name = &"ReachOverlay"
@@ -163,6 +167,12 @@ func _check_replay() -> void:
 	_expect(not room.checkpoint is Vector2, "commit kept the checkpoint it had scrubbed away")
 
 	reach.visible = false
+	var steps_hidden := runner.log.steps.size()
+	var trail_hidden := runner.log.trail.size()
+	runner._note_input(PlayerInputFrame.new(), 1.0 / 60.0)
+	runner._note_trail()
+	_expect(runner.log.steps.size() == steps_hidden + 1, "a rewind charge stopped the log")
+	_expect(runner.log.trail.size() == trail_hidden, "the trail grew while the overlay was hidden")
 	var lived := runner.log.steps.size()
 	runner.player.respawn(_cell_feet(room, Vector2i(18, 8)))
 	for _frame in 80:
@@ -187,6 +197,12 @@ func _check_replay() -> void:
 	_expect(ui_rewind._k == 0, "debug scrub did not reach the start of the history")
 	ui_rewind._cancel()
 
+	runner.restart_room()
+	_expect(
+		runner.log.steps.is_empty() and runner.log.trail.is_empty(),
+		"restart kept %d steps and %d trail points" % [runner.log.steps.size(), runner.log.trail.size()],
+	)
+
 	runner.player.respawn(room.spawn_feet(), true)
 	_expect(runner.player.is_on_floor(), "a respawn on the ground did not read as grounded")
 	runner.player.respawn(room.spawn_feet() + Vector2(0, -40), true)
@@ -205,6 +221,7 @@ func _check_scrub_time() -> void:
 	runner.add_child(camera)
 	root.add_child(runner)
 	_expect(runner.start_generated_run(1), "timing run did not generate")
+	runner.keep_rewind_history = true
 	await physics_frame
 	var frame := PlayerInputFrame.new()
 	frame.move = Vector2.RIGHT
