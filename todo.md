@@ -18,7 +18,7 @@ Next safe parallel wave:
 - [ ] Input remap. A pause Controls page edits Godot's InputMap: replace a
   key without wiping the joypad button, and the reverse, and leave stick
   axes alone. Save the result to `user://input.cfg` and apply it on boot.
-  Do not port `../src/input/bindings.ts`. The Nintendo HID profile stays out.
+  Do not port `../idea/src/input/bindings.ts`. The Nintendo HID profile stays out.
 
 ## Use groups for room-wide broadcasts
 

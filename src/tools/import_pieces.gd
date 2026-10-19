@@ -1,10 +1,10 @@
 extends SceneTree
 ## Repeatable standalone import from the JavaScript piece editor's JSON.
 ##
-## Run from lil-guy/:
+## Run from the repo root:
 ##   godot --headless --path . --script res://src/tools/import_pieces.gd
 
-const SOURCE_DIR := "../assets/pieces"
+const SOURCE_DIR := "../idea/assets/pieces"
 const INDEX_FILE := "index.json"
 const SCENE_DIR := "res://scenes/pieces"
 const RESOURCE_DIR := "res://resources/pieces"

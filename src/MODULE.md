@@ -89,7 +89,7 @@ Code that real art or animation will replace is grouped in
   to be authored in the JavaScript editor; unchanged source fingerprints leave
   generated scenes/resources byte-identical.
   `sync_art.gd` is ongoing: it copies the art Godot uses from the prototype's
-  `../assets` (animation, backdrop, and tile sheets) and rebuilds each animation's
+  `../idea/assets` (animation, backdrop, and tile sheets) and rebuilds each animation's
   AnimationLibrary. Re-run after exporting art; generated tracks are replaced
   while other tracks survive.
 - `dev/` — temporary probes used while bootstrapping the project.

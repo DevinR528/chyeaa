@@ -1,6 +1,6 @@
 extends SceneTree
-## Ongoing pixel-art translation from the prototype's ../assets into Godot. The JS
-## game still reads ../assets, so this copies only what Godot uses: the sheets
+## Ongoing pixel-art translation from the authoring repo's ../idea/assets into Godot.
+## The TypeScript game still reads that tree, so this copies only what Godot uses: the sheets
 ## every animation in art/index.json plays, the backdrop layer images, the
 ## shader textures those layers sample, and the tile sheets in tilesets/index.json.
 ## Then it rebuilds one AnimationLibrary per animation next to its sheets.
@@ -8,10 +8,10 @@ extends SceneTree
 ## Re-run after exporting art from the pixel app. Imported tracks are regenerated
 ## from the anim documents; tracks added by hand are left in place.
 ##
-## Run from lil-guy/:
+## Run from the repo root:
 ##   godot --headless --path . --script res://src/tools/sync_art.gd
 
-const SOURCE_ROOT := "../assets"
+const SOURCE_ROOT := "../idea/assets"
 const ART_INDEX := "art/index.json"
 const BACKGROUNDS_DIR := "backgrounds"
 const SHADERS_DIR := "shaders"

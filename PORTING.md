@@ -4,7 +4,7 @@ This is the implementation handoff for agents finishing the TypeScript-to-Godot
 port. `todo.md` is the short checklist; this file owns scope, dependencies,
 source references, and acceptance criteria.
 
-The behavior source is the prototype in `../src` and `../assets`. The target is
+The behavior source is the prototype in `../idea/src` and `../idea/assets`. The target is
 this Godot 4.7 project. Preserve behavior and tuning during the port; redesigns
 belong in a later task.
 
@@ -46,8 +46,18 @@ Current suites are `abilities_smoke`, `actors_smoke`, `art_smoke`,
 
 ## Still to do
 
-Tasks 1-7 below are done. This is what is still missing if the Godot game is
-supposed to stand in for `../src`.
+Tasks 1-7 below are done. Behavior questions go to `../idea/src`.
+
+Rewind and generated runs are in. Rewind matches the TypeScript replay: one
+start-of-history snapshot of the player's primitive fields, then an input log.
+A backward scrub restores that start and re-simulates; a forward scrub
+continues from the cursor. The per-second snapshot cache is not a task.
+Pause can start a generated run, and the exit loads `seed + 1` at the same
+difficulty. Do not reopen either.
+
+The open port item is input remap. See `todo.md`: a pause Controls page edits
+Godot's InputMap, saves to `user://input.cfg`, and applies it on boot. Do not
+port `../idea/src/input/bindings.ts`. The Nintendo HID profile stays out.
 
 ### A run advances from pause
 
@@ -55,10 +65,10 @@ supposed to stand in for `../src`.
 run: difficulty 3, piece count `[1, 2]`, random seed (tests pass one). The
 exit effect opens the reward menu titled with the level, then the next room
 uses `seed + 1` at the same difficulty. An empty offer skips the menu. A failed
-seed tries the next 5, then the current room restarts. There is still no room
+seed tries the next 5, then the current room restarts. There is no room
 graph, overworld, or difficulty that climbs.
 
-There is no collected bank and no build screen (`../src/ui/build_screen.ts`).
+There is no collected bank and no build screen (`../idea/src/ui/build_screen.ts`).
 The HUD bank count is always 0. Pause is Resume, Restart room, and Generated
 run. During a generated run that last entry is Demo room and reloads the
 authored demo; the build stays. Input remap is not on that menu; see `todo.md`.
@@ -74,23 +84,19 @@ pause restart, and a move to the demo or the next generated room start a new
 one. With a debug overlay up, the picker always lists Rewind and the commit
 is free. `RewindTrail` draws the log while a debug overlay is visible.
 
-Scrubbing two minutes (7200 steps) of a generated room replays in about 560ms.
-That is more than a couple of frames. Per-second snapshots, so a backward
-scrub resimulates only from the previous second, are not built yet.
-
 `ContactLog` is not that log. It is the prototype's debug contact print
-(`../src/physics/debug.ts` `log_contact`): who hit whom, the boxes, and whether
+(`../idea/src/physics/debug.ts` `log_contact`): who hit whom, the boxes, and whether
 the decision was stomp, hurt, or bounce. It stays off unless a test turns it
 on. The readout does not show it, and rewind would not read it. Rewind replays
 recorded input.
 
 ### Left behind on purpose, or not a runtime port
 
-- The in-browser room, piece, and anim editor. Piece JSON still imports through
-  `src/tools/import_pieces.gd`.
+- The in-browser room, piece, and anim editor. They stay in `../idea`. Piece
+  JSON still imports through `src/tools/import_pieces.gd`.
 - The debug tuning panel and sim-speed slider. Use the inspector.
 - Capsule collision. Rectangles stay until feel is signed off.
-- Input remapping and the Nintendo HID profile.
+- A room graph, overworld, climbing difficulty, collected bank, and build screen.
 - `tint` and `wave` shaders. Nothing uses them.
 
 ## Scheduling
@@ -121,10 +127,10 @@ so stride is not implemented against SpriteFrames and immediately rewritten.
 
 Prototype sources:
 
-- `../src/player/stride.ts` and `stride.test.ts`
-- `../src/player/player.ts`, especially `_run_footsteps`
-- `../src/player/animator.ts`
-- `../assets/art/*/*.anim.json`
+- `../idea/src/player/stride.ts` and `stride.test.ts`
+- `../idea/src/player/player.ts`, especially `_run_footsteps`
+- `../idea/src/player/animator.ts`
+- `../idea/assets/art/*/*.anim.json`
 
 Godot targets:
 
@@ -171,8 +177,8 @@ do not decide gameplay outcomes in the audio code.
 
 Prototype sources:
 
-- `../src/audio/game_sfx.ts` and `sfx.ts`
-- `../assets/audio`
+- `../idea/src/audio/game_sfx.ts` and `sfx.ts`
+- `../idea/assets/audio`
 
 Godot targets:
 
@@ -214,12 +220,12 @@ Status: complete. Implemented as one task because the importer and
 
 Prototype sources:
 
-- `../src/entities/props/switch.ts`
-- `../src/entities/components/power.ts`
-- `../src/entities/components/faller.ts` and `faller.test.ts`
-- `../src/entities/props/tile_prop.ts`
-- `../data/entities/kinds/{switch,gate,fall_block,track}.json`
-- `../assets/pieces/on_off_gate.json`
+- `../idea/src/entities/props/switch.ts`
+- `../idea/src/entities/components/power.ts`
+- `../idea/src/entities/components/faller.ts` and `faller.test.ts`
+- `../idea/src/entities/props/tile_prop.ts`
+- `../idea/data/entities/kinds/{switch,gate,fall_block,track}.json`
+- `../idea/assets/pieces/on_off_gate.json`
 
 Godot targets:
 
@@ -268,9 +274,9 @@ Status: complete. Task 3 supplies the Switch and Gate prefabs used by
 
 Prototype sources:
 
-- `../assets/pieces/*.json` and `index.json`
-- `../src/level/piece_document.ts`
-- all files under `../src/gen`, especially `generate_room.test.ts`
+- `../idea/assets/pieces/*.json` and `index.json`
+- `../idea/src/level/piece_document.ts`
+- all files under `../idea/src/gen`, especially `generate_room.test.ts`
 
 Godot targets:
 
@@ -327,10 +333,10 @@ presentation; gameplay only requests the effect.
 
 Prototype sources:
 
-- `../src/frame/screen_shake.ts`
-- `../src/render/vignette.ts` and `vignette.test.ts`
-- `../src/player/pogo.ts` side-pop event ordering
-- `../src/world.ts` vignette constants
+- `../idea/src/frame/screen_shake.ts`
+- `../idea/src/render/vignette.ts` and `vignette.test.ts`
+- `../idea/src/player/pogo.ts` side-pop event ordering
+- `../idea/src/world.ts` vignette constants
 
 Godot targets:
 
@@ -365,8 +371,8 @@ Status: complete. No UI or checkpoint in this subtask.
 
 Prototype sources:
 
-- `../src/powerup/powerups.ts` and `powerups.test.ts`
-- `../src/player/stats.ts`
+- `../idea/src/powerup/powerups.ts` and `powerups.test.ts`
+- `../idea/src/player/stats.ts`
 
 Godot targets:
 
@@ -401,8 +407,8 @@ the bank, and the build screen are still open. See "Still to do".
 
 Prototype sources:
 
-- `../src/powerup/{potion,potion_belt,checkpoint,room_access}.ts`
-- `../src/ui/{potion_picker,build_hud,pause_menu}.ts`
+- `../idea/src/powerup/{potion,potion_belt,checkpoint,room_access}.ts`
+- `../idea/src/ui/{potion_picker,build_hud,pause_menu}.ts`
 
 Godot targets:
 
@@ -436,9 +442,9 @@ Status: complete. No tuning panel and no profiler.
 
 Prototype sources:
 
-- `../src/debug/MODULE.md`
-- `../src/physics/debug.ts`
-- `../src/frame/perf.ts`
+- `../idea/src/debug/MODULE.md`
+- `../idea/src/physics/debug.ts`
+- `../idea/src/frame/perf.ts`
 
 Godot targets:
 
@@ -474,18 +480,17 @@ and the cell lookup table are both gone.
 
 ## 10. Approval-gated or deferred
 
-Moved into "Still to do". Capsules, rewind, input remapping, and the unused
-shaders stay deferred. The reward card on an exit is in. Replacing the demo
-with the next generated room is not.
+Moved into "Still to do". Capsules and the unused shaders stay deferred.
+Input remap is the open port item. Rewind and the generated-run advance are
+in. The reward card on an exit is in.
 
 ## Final retirement checklist
 
 1. Run every headless suite and the boot check.
-2. Play Standard, Grappler, and Pogo side by side with `npm run dev:plt` in the
-   same demo sections. Compare jump apex/range, dash, grapple latch/release,
-   pogo down/side response, moving-platform carry, and actor contacts.
-3. Confirm all runtime assets needed by Godot are under `lil-guy/assets`, or
-   deliberately keep `sync_art.gd` reading `../assets`.
+2. Play Standard, Grappler, and Pogo side by side with `npm run dev:plt` in
+   `../idea`, in the same demo sections. Compare jump apex/range, dash, grapple
+   latch/release, pogo down/side response, moving-platform carry, and actor contacts.
+3. Runtime copies live under `assets/`. `sync_art.gd` reads `../idea/assets`.
 4. Confirm no Godot runtime or authored scene reads prototype JSON.
-5. Only then remove the TypeScript runtime. Keep archived source data needed by
-   the art sync or piece provenance.
+5. The TypeScript runtime stays in `../idea`, which also keeps the source data
+   for the art sync and piece provenance.

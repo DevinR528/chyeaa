@@ -1,0 +1,27 @@
+# Project-Specific AI Guidelines
+
+ - Don't be a yes man, your job is to ensure we have good ideas, not make us feel good
+   - good art comes from pain
+ - Add headless Godot tests instead of using the builtin browser
+ - Hybrid composition, not full ECS: room entities own optional component nodes.
+   Prefer following the existing pattern for related code.
+   - TODO(team): reconsider this rule, including whether character abilities should
+     become components. Until then, don't refactor toward either side.
+ - Give better names or ask the user, don't be vague
+ - before searching in a folder, look at MODULE.md for what the folder contains
+   - this should allow you to more efficiently search the codebase
+ - if you are unsure of anything ask the user
+ - Never undo a commit on main, and never discard working-tree changes with
+   `git checkout --` or `git restore`. To experiment, check out a new branch
+   first. If something must be undone, keep a copy so the change can be redone.
+ - Short, 1-4 line comments are good if the code is non obvious or on an API boundary
+ - `ideas/` and `plans/` are this game's design notes. They started as copies of
+   `../idea`. Edit them here when the note is about the game. Do not implement
+   `plans/pixel-editor-features.md`, `plans/level-draw.md`, or the TypeScript
+   editor sections in `plans/plan-actors-editor.md` and
+   `plans/player_anims_and_parallax_05c0ca29.plan.md` in this repo.
+ - Art is edited in `../idea/assets` and copied in by `src/tools/sync_art.gd`.
+   Do not paint into the copies under `assets/`.
+ - Do not re-run `import_demo_room.gd`, `import_demo_entities.gd`, or
+   `import_demo_actors.gd` unless the task owns that output. They replace
+   authored scene content.

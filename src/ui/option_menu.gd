@@ -7,6 +7,7 @@ extends Container
 @onready var _audio_bus_idx: int = AudioServer.get_bus_index("Master")
 
 var _slider_max: float
+var _should_exit: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -30,6 +31,14 @@ func _make_label(text: String, label_name := &"") -> Label:
 	return label
 
 
+func is_exit_pressed() -> bool:
+	return _exit.has_focus() or _should_exit
+
+
 func _on_h_slider_value_changed(value: float) -> void:
 	var vol := linear_to_db(value / _slider_max)
 	AudioServer.set_bus_volume_db(_audio_bus_idx, vol)
+
+
+func _on_exit_button_pressed() -> void:
+	_should_exit = true

@@ -7,19 +7,18 @@ may update art atlases and animation resources, but must not rewrite room scenes
 
 - `tiles/kind_tiles.png` — placeholder flat tiles, one 8x8 column per tile kind
   (atlas order is in `src/tools/import_demo_room.gd`). Repaint freely; keep the layout.
-- `art/` — copied from the prototype's `../assets/art` by `src/tools/sync_art.gd`,
-  only what Godot uses, at the same relative paths. Edit the source, not these
-  copies; the next sync overwrites them. `<id>/<id>.animation_library.tres` is
-  generated from `<id>.anim.json`: clips key texture, region, pivot offset, and
-  frame timing; footstep clips also key a small pre-plant visual lag. Authored
-  events become presentation method keys. Re-sync replaces those generated
-  tracks and preserves tracks added by hand.
-  Until the JS prototype is removed, both games read this art from `../assets`.
+- `art/` — copied from `../idea/assets/art` by `src/tools/sync_art.gd`,
+  only what Godot uses, at the same relative paths. Edit the source in
+  `../idea/assets`, not these copies; the next sync overwrites them.
+  `<id>/<id>.animation_library.tres` is generated from `<id>.anim.json`: clips
+  key texture, region, pivot offset, and frame timing; footstep clips also key
+  a small pre-plant visual lag. Authored events become presentation method keys.
+  Re-sync replaces those generated tracks and preserves tracks added by hand.
   `earth_tileset/earth_tileset.png` is the 32 px block art for rooms' `BlockTerrain`
   TileSets, which are made in the editor; if pieces move in the sheet, update their
   atlases by hand.
 - `shaders/` — `backdrop_plate.gdshader` (the prototype's desaturate then fog
-  passes, combined) and `fog_texture.png` (synced from `../assets/shaders`).
+  passes, combined) and `fog_texture.png` (synced from `../idea/assets/shaders`).
 - `audio/` — only sounds used by `GameAudio`. `sync_art.gd` copies the WAV/OGG
   sources; `dash2.wav` and `bird_poo.wav` are PCM conversions because Godot 4.7
   does not import their prototype FLAC sources.

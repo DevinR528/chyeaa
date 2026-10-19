@@ -203,13 +203,23 @@ func _confirm_pause() -> void:
 		else:
 			runner.start_generated_run()
 
+
 func _steer_options() -> void:
 	if Input.is_action_just_pressed(&"move_up"):
-		var next = _opt_menu.find_next_valid_focus()
-		if next: next.grab_focus()
+		var next = _opt_menu.find_prev_valid_focus()
+		if next:
+			next.grab_focus()
+		else:
+			var sib = _opt_menu.find_valid_focus_neighbor(SIDE_RIGHT)
+			if sib: sib.grab_focus()
 	elif Input.is_action_just_pressed(&"move_down"):
 		var next = _opt_menu.find_next_valid_focus()
-		if next: next.grab_focus()
+		if next:
+			next.grab_focus()
+		else:
+			var sib = _opt_menu.find_valid_focus_neighbor(SIDE_RIGHT)
+			if sib: sib.grab_focus()
+
 	elif Input.is_action_just_pressed(&"jump"):
 		if _opt_menu.is_exit_pressed():
 			close_option()

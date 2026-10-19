@@ -3,10 +3,10 @@ extends SceneTree
 ## scenes/rooms/demo.tscn. Adds an `Actors` node and leaves the rest of the room,
 ## props included, as edited in Godot. Re-running replaces only `Actors`.
 ##
-## Run from lil-guy/:
+## Run from the repo root:
 ##   godot --headless --path . --script res://src/tools/import_demo_actors.gd
 
-const SOURCE_JSON := "../assets/levels/demo.json"
+const SOURCE_JSON := "../idea/assets/levels/demo.json"
 const ROOM_SCENE_PATH := "res://scenes/rooms/demo.tscn"
 const ACTORS_NODE := "Actors"
 const TILE := MovementStats.TILE

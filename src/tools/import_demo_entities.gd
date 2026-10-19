@@ -4,10 +4,10 @@ extends SceneTree
 ## Re-running replaces only `Props`, which overwrites Godot edits to props.
 ## Walkers and throwables are skipped; import_demo_actors.gd brings them in.
 ##
-## Run from lil-guy/:
+## Run from the repo root:
 ##   godot --headless --path . --script res://src/tools/import_demo_entities.gd
 
-const SOURCE_JSON := "../assets/levels/demo.json"
+const SOURCE_JSON := "../idea/assets/levels/demo.json"
 const ROOM_SCENE_PATH := "res://scenes/rooms/demo.tscn"
 const PROPS_NODE := "Props"
 const TILE := MovementStats.TILE

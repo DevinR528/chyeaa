@@ -3,7 +3,7 @@ extends SceneTree
 ## Godot; re-running overwrites scenes/rooms/demo.tscn and the kind TileSet.
 ## Entities and decorative stamps are not imported yet.
 ##
-## Run from lil-guy/:
+## Run from the repo root:
 ##   godot --headless --path . --script res://src/tools/import_demo_room.gd
 ## The first run paints the kind tile PNG; run `godot --headless --path . --import`
 ## so Godot imports it, then run this script again.
@@ -11,7 +11,7 @@ extends SceneTree
 const RoomScript := preload("res://src/rooms/room.gd")
 const Kind := RoomScript.Kind
 
-const SOURCE_JSON := "../assets/levels/demo.json"
+const SOURCE_JSON := "../idea/assets/levels/demo.json"
 const KIND_TILES_PNG := "res://assets/tiles/kind_tiles.png"
 const TILE_SET_PATH := "res://resources/tiles/kind_tiles.tres"
 const ROOM_SCENE_PATH := "res://scenes/rooms/demo.tscn"
