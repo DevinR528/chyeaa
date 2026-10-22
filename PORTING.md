@@ -41,7 +41,7 @@ change, and this boot check:
 
 Current suites are `abilities_smoke`, `actors_smoke`, `art_smoke`,
 `audio_smoke`, `block_terrain_smoke`, `debug_smoke`, `demo_room_smoke`,
-`fx_smoke`, `locomotion_smoke`, `pieces_smoke`, `presentation_smoke`, `props_smoke`,
+`fx_smoke`, `locomotion_smoke`, `pieces_smoke`, `player_data_smoke`, `presentation_smoke`, `props_smoke`,
 `reach_overlay_smoke`, `rewind_smoke`, `run_smoke`, `run_ui_smoke`, and `triggers_smoke`.
 
 ## Still to do
@@ -56,7 +56,7 @@ Pause can start a generated run, and the exit loads `seed + 1` at the same
 difficulty. Do not reopen either.
 
 The open port item is input remap. See `todo.md`: a pause Controls page edits
-Godot's InputMap, saves to `user://input.cfg`, and applies it on boot. Do not
+Godot's InputMap, saves into `user://player.cfg`, and applies it on boot. Do not
 port `../idea/src/input/bindings.ts`. The Nintendo HID profile stays out.
 
 ### A run advances from pause

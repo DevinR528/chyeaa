@@ -59,9 +59,9 @@ func resolve_clip() -> StringName:
 		wanted = body.ability.animation_clip(wanted)
 	if animation_player.has_animation(wanted):
 		return wanted
-	for name in fallback:
-		if animation_player.has_animation(name):
-			return name
+	for n in fallback:
+		if animation_player.has_animation(n):
+			return n
 	return NO_CLIP
 
 

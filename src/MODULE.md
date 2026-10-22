@@ -70,6 +70,10 @@ Typed GDScript only. Scenes and imported assets do not live here.
   ability state, coyote, jump buffer, dash cooldown, and the kind under the
   feet. The mouse drags its title and collapses the body. `ContactLog` records
   stomp, hurt, and bounce decisions only when enabled. It is not the rewind log.
+- `player_data.gd` — autoload. `user://player.cfg` keeps the window position,
+  size, and fullscreen flag, and pulls a saved rect back onto a connected
+  screen. Saving the window leaves other sections in place, so a later setting
+  such as input mappings can share the file.
 - `physics_layers.gd` — named collision layer bits: world, hazard, exit, fall,
   player, contact, grapple, pogo. Grapple and pogo are sensor layers (mask 0).
   The player body is on its own layer, never world.

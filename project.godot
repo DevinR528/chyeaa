@@ -17,6 +17,7 @@ config/icon="uid://clfll0hdyol3m"
 
 [autoload]
 
+PlayerData="*res://src/player_data.gd"
 FullscreenToggle="*res://src/presentation/fullscreen_toggle.gd"
 
 [display]

@@ -26,8 +26,8 @@ class SeedRng:
 	var original_seed := 1
 	var state := 1
 
-	func _init(seed: int) -> void:
-		original_seed = absi(seed) if seed != 0 else 1
+	func _init(rng_seed: int) -> void:
+		original_seed = absi(rng_seed) if rng_seed != 0 else 1
 		state = original_seed
 
 	func next() -> float:

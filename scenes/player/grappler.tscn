@@ -1,13 +1,18 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://2m6o37uxlerd"]
 
 [ext_resource type="PackedScene" path="res://scenes/player/standard.tscn" id="1_standard"]
-[ext_resource type="Script" path="res://src/player/grapple.gd" id="2_grapple"]
-[ext_resource type="AnimationLibrary" path="res://assets/art/octo_idle/octo_idle.animation_library.tres" id="3_animations"]
+[ext_resource type="Texture2D" uid="uid://di4a48xiunnsi" path="res://assets/art/flat_octo_idle/flat_octo_idle.png" id="2_bcl4k"]
+[ext_resource type="Script" uid="uid://bwqn2hwc33tmu" path="res://src/player/grapple.gd" id="2_grapple"]
+[ext_resource type="AnimationLibrary" uid="uid://8urgh3s5s74" path="res://assets/art/octo_idle/octo_idle.animation_library.tres" id="3_animations"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_grappler"]
 size = Vector2(35, 25)
 
-[node name="Grappler" node_paths=PackedStringArray("ability") instance=ExtResource("1_standard")]
+[node name="Grappler" unique_id=874399651 node_paths=PackedStringArray("ability") instance=ExtResource("1_standard")]
+stat_overrides = Dictionary[StringName, float]({
+&"ground_accel": 1800.0,
+&"max_run": 350.0
+})
 uses_grapple_surfaces = true
 ability = NodePath("Grapple")
 
@@ -19,16 +24,17 @@ polygon = PackedVector2Array(-17.5, -12.5, 17.5, -12.5, 17.5, 12.5, -17.5, 12.5)
 position = Vector2(14.5, -7.5)
 
 [node name="CharacterSprite" parent="." index="1"]
+texture = ExtResource("2_bcl4k")
+offset = Vector2(-40, -52)
+region_rect = Rect2(0, 0, 80, 64)
 fallback = Array[StringName]([])
 
 [node name="AnimationPlayer" parent="CharacterSprite" index="0"]
-libraries = {
-&"": ExtResource("3_animations")
-}
+libraries/ = ExtResource("3_animations")
 
 [node name="CollisionShape2D" parent="." index="2"]
 position = Vector2(0.5, 0.5)
 shape = SubResource("RectangleShape2D_grappler")
 
-[node name="Grapple" type="Node2D" parent="."]
+[node name="Grapple" type="Node2D" parent="." index="5" unique_id=808615398]
 script = ExtResource("2_grapple")

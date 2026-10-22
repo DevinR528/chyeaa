@@ -17,7 +17,7 @@ Next safe parallel wave:
 - [x] Runtime diagnostics (Task 7).
 - [ ] Input remap. A pause Controls page edits Godot's InputMap: replace a
   key without wiping the joypad button, and the reverse, and leave stick
-  axes alone. Save the result to `user://input.cfg` and apply it on boot.
+  axes alone. Save the result into `user://player.cfg` and apply it on boot.
   Do not port `../idea/src/input/bindings.ts`. The Nintendo HID profile stays out.
 
 ## Use groups for room-wide broadcasts
@@ -44,35 +44,12 @@ state change, while each `Power` component resolves the requested switch ids
 through its owning room and connects directly. The component reads initial
 state when binding and caches later signal updates for all/any evaluation.
 
-## Room cell queries
+## Art/Animation issues
 
-`kind_at_cell` and `is_solid_cell` ask the physics space, so big-tile shapes,
-flips, and transposes stay in the engine. Grapple and pogo tiles are sensor
-layers. Props with those surfaces are still found by their box.
-
-## Move character sprites to Sprite2D + AnimationPlayer
-
-`CharacterSprite` now uses `Sprite2D` plus `AnimationPlayer`. Generated method
-keys are re-emitted through `frame_event`; audio remains Task 2.
-
-An `AnimationPlayer` can key other properties on the same timeline: audio and
-method-call tracks for footsteps, plus effects, squash and stretch, or offsets.
-Each clip keys `texture`, `region_rect`, and `offset`, so clips with different
-sheets need no shared canvas (the AtlasTexture margins in `sync_art.gd` go away).
-
-- [x] `sync_art.gd` writes an `AnimationLibrary` per anim document instead of SpriteFrames.
-- [x] Re-syncing replaces only generated texture, region, pivot, visual-stride,
-  and animation-event tracks and keeps tracks added in Godot.
-- [x] Anim-document `events` become method-call keys that retain the presentation
-  event boundary.
-- [x] `CharacterSprite` keeps choosing clips the same way (the ability's clip,
-  then the body's movement clip, then `fallback`, else the placeholder) and plays them on the player.
-- [x] Update `art_smoke.gd`: the clip, pivot, flip, and placeholder checks carry
-  over; the frame-event checks move to the new tracks.
-
-Not needed for this: `AnimationTree`. Clip choice is simple and driven by code,
-and crossfades do little for pixel flipbooks. Revisit if land or run-start
-transition clips arrive.
+ - grappler guys run is to slow at 8fps consider
+   - `"times": PackedFloat32Array(0, 0.0833, 0.1666, 0.24999, 0.3333, 0.41666, 0.4999, 0.58333),` instead of 1/8th
+ - Most state transition need a 3ish frame (specifically for idle to run) "transition" animation. Blasphemous does this for idle to run
+ - The tileset can be slightly isometric we just can't have top/bottom on the same 32pixel tile... fucking duh
 
 ## Bugs
 

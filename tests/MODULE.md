@@ -46,6 +46,9 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
 - `audio_smoke.gd` — event-to-stream mapping, landing volume/pitch, pooled
   one-shots, replacing/stopping the footstep voice, and reconnecting after a
   character switch, with device playback disabled.
+- `player_data_smoke.gd` — window rect round-trip, rejected sizes, a preserved
+  extra section, fullscreen keeping the windowed rect, and pulling a saved
+  window onto a screen that exists.
 - `presentation_smoke.gd` — quadratic screen-shake decay/replacement/direction,
   vignette screen coordinates and radii, and Pogo shake beginning after hitstop.
 - `fx_smoke.gd` — death and exit effects delay the respawn and the reward menu,

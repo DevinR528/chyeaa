@@ -12,7 +12,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed(&"toggle_fullscreen") or event.is_echo():
 		return
 	var direction := -1 if event is InputEventKey and event.shift_pressed else 1
+	# Snapshot the windowed rect before fullscreen replaces it with the monitor size.
+	PlayerData.remember_window(false)
 	_step_window_size(direction)
+	PlayerData.remember_window(true)
 	get_viewport().set_input_as_handled()
 
 
