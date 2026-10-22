@@ -44,12 +44,23 @@ state change, while each `Power` component resolves the requested switch ids
 through its owning room and connects directly. The component reads initial
 state when binding and caches later signal updates for all/any evaluation.
 
+
+
+## HUMANS write, AI can update if fixed or something
+
+## Game Feel
+
+ - "Deaths of Peck" has MUCH less air movement control, this might be nice???
+
 ## Art/Animation issues
 
  - grappler guys run is to slow at 8fps consider
    - `"times": PackedFloat32Array(0, 0.0833, 0.1666, 0.24999, 0.3333, 0.41666, 0.4999, 0.58333),` instead of 1/8th
- - Most state transition need a 3ish frame (specifically for idle to run) "transition" animation. Blasphemous does this for idle to run
+ - Most state transition need a 3ish frame (specifically for idle to run) "transition" animation
+   - we could play these at 2-3x speed (this is typically how it's done)
  - The tileset can be slightly isometric we just can't have top/bottom on the same 32pixel tile... fucking duh
+ - skid/turn animation
+
 
 ## Bugs
 

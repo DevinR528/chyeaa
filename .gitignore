@@ -4,4 +4,4 @@
 
 .vscode/
 
-junk/
+*.tmp

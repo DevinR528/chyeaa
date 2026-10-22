@@ -45,11 +45,11 @@ static func screen_values(
 	outer_world: float,
 	alpha: float,
 ) -> Dictionary:
-	var scale := minf(absf(camera_zoom.x), absf(camera_zoom.y))
-	var inner := maxf(0.0, inner_world * scale)
+	var _scale := minf(absf(camera_zoom.x), absf(camera_zoom.y))
+	var inner := maxf(0.0, inner_world * _scale)
 	return {
 		"center": canvas_transform * world_center,
 		"inner": inner,
-		"outer": maxf(inner + 1.0, outer_world * scale),
+		"outer": maxf(inner + 1.0, outer_world * _scale),
 		"darkness": clampf(alpha, 0.0, 1.0),
 	}

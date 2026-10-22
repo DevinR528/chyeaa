@@ -45,7 +45,7 @@ var build := RunBuild.new()
 ## Potions for `build`. A planted checkpoint lives here, not on the player.
 var belt := PotionBelt.new()
 ## Input log since the last respawn. Replay calls the same step as live play.
-var log := RewindLog.new()
+var _log := RewindLog.new()
 ## True while a scrub is re-running recorded steps.
 var replaying := false
 ## Death keeps this history, matching the debug overlays. Tests set it directly.
@@ -162,26 +162,26 @@ func _note_input(frame: PlayerInputFrame, real_delta: float) -> void:
 	if replaying or player == null:
 		return
 	_sync_recording()
-	if not log.recording:
+	if not _log.recording:
 		return
-	log.push(frame, real_delta, player.stats)
+	_log.push(frame, real_delta, player.stats)
 
 
 func _note_trail() -> void:
 	if player == null:
 		return
 	if replaying:
-		if log.recording and _debug_overlay_on():
-			log.put_trail(_cursor, player.global_position)
+		if _log.recording and _debug_overlay_on():
+			_log.put_trail(_cursor, player.global_position)
 		return
-	if log.recording and _debug_overlay_on():
-		log.push_trail(player.global_position)
-	if log.recording:
-		_cursor = log.steps.size()
+	if _log.recording and _debug_overlay_on():
+		_log.push_trail(player.global_position)
+	if _log.recording:
+		_cursor = _log.steps.size()
 
 
 func rewind_floor() -> int:
-	return 0 if _keep_history() else log.respawn_floor()
+	return 0 if _keep_history() else _log.respawn_floor()
 
 
 func rewind_is_free() -> bool:
@@ -190,44 +190,44 @@ func rewind_is_free() -> bool:
 
 func can_rewind() -> bool:
 	return (
-		log.recording
+		_log.recording
 		and player != null
 		and not fx.is_playing()
 		and not _advance_queued
-		and log.steps.size() > rewind_floor()
+		and _log.steps.size() > rewind_floor()
 	)
 
 
 func rewind_timeline() -> Dictionary:
 	return {
 		"floor": rewind_floor(),
-		"total": log.steps.size(),
-		"deaths": log.deaths,
+		"total": _log.steps.size(),
+		"deaths": _log.deaths,
 		"step_seconds": 1.0 / float(Engine.physics_ticks_per_second),
-		"bytes": log.payload_bytes(),
+		"bytes": _log.payload_bytes(),
 	}
 
 
 func preview_rewind(k: int) -> void:
-	if not log.recording or player == null:
+	if not _log.recording or player == null:
 		return
-	var target := clampi(k, 0, log.steps.size())
+	var target := clampi(k, 0, _log.steps.size())
 	var live_stats := player.stats
 	replaying = true
 	if target < _cursor:
-		log.undo_uses_through(_cursor)
+		_log.undo_uses_through(_cursor)
 		_reset_to_history_start()
 		_cursor = 0
-		log.redo_uses_at(0)
+		_log.redo_uses_at(0)
 	while _cursor < target:
-		var step: RewindLog.Step = log.steps[_cursor]
+		var step: RewindLog.Step = _log.steps[_cursor]
 		player.stats = step.stats
 		_run_step(step.real_delta, step.frame)
 		_cursor += 1
-		log.redo_uses_at(_cursor)
+		_log.redo_uses_at(_cursor)
 	player.stats = live_stats
 	replaying = false
-	log.cut_trail(_cursor)
+	_log.cut_trail(_cursor)
 	if camera != null:
 		camera.snap_to_target()
 	player.reset_physics_interpolation()
@@ -239,7 +239,7 @@ func preview_rewind(k: int) -> void:
 ## Puts the room at `k` and forgets everything after it. `free_in_debug` skips the charge.
 func commit_rewind(k: int, free_in_debug := false) -> void:
 	preview_rewind(k)
-	log.truncate(_cursor)
+	_log.truncate(_cursor)
 	if not free_in_debug:
 		var potion := belt.potion(RunBuild.Id.REWIND)
 		if potion is RewindPotion:
@@ -269,7 +269,7 @@ func _reset_to_history_start() -> void:
 	room.freeze_entities(false)
 	room.reset_entities()
 	_set_player_alpha(1.0)
-	player.respawn(log.spawn, true)
+	player.respawn(_log.spawn, true)
 	_clear_contact_memory()
 
 
@@ -281,7 +281,7 @@ func _debug_overlay_on() -> bool:
 	return readout != null and bool(readout.get(&"shown"))
 
 
-## Debug history, including the test flag. A death may keep the log; a win,
+## Debug history, including the test flag. A death may keep the _log; a win,
 ## pause restart, or room change does not.
 func _keep_history() -> bool:
 	return keep_rewind_history or _debug_overlay_on()
@@ -299,11 +299,11 @@ func _sync_recording() -> void:
 	if replaying or player == null:
 		return
 	if _should_record():
-		if not log.recording:
-			log.begin(player_feet())
+		if not _log.recording:
+			_log.begin(player_feet())
 			_cursor = 0
-	elif log.recording:
-		log.stop()
+	elif _log.recording:
+		_log.stop()
 		_cursor = 0
 
 
@@ -325,7 +325,7 @@ func switch_character(index: int) -> void:
 	if room == null or camera == null:
 		return
 	room.use_surfaces(player.uses_grapple_surfaces, player.uses_pogo_surfaces)
-	camera.target = player
+	camera.bind_player(player)
 	camera.frame_room(room.pixel_rect())
 	_respawn(false)
 	character_changed.emit(index)
@@ -345,13 +345,13 @@ func apply_build() -> void:
 	belt.sync(build, room)
 	_drop_spent_potions()
 	var dropped := false
-	if log.recording:
+	if _log.recording:
 		for id: RunBuild.Id in had:
 			if not belt.potions.has(id):
 				dropped = true
 				break
 	if dropped:
-		log.stop()
+		_log.stop()
 		_cursor = 0
 	_sync_recording()
 
@@ -391,8 +391,8 @@ func drink_potion(id: RunBuild.Id) -> PotionUse:
 	if player == null or room == null:
 		return null
 	var record := belt.use(id, player_feet(), room)
-	if record != null and log.recording and not replaying:
-		log.log_use(record)
+	if record != null and _log.recording and not replaying:
+		_log.log_use(record)
 	_drop_spent_potions()
 	_sync_recording()
 	return record
@@ -407,8 +407,8 @@ func restart_room() -> void:
 ## Stitch a generated room and play it. `seed` below 0 draws a random one.
 ## The next exit offers a reward, then loads `seed + 1` at the same difficulty.
 ## The build stays. `return_to_demo` leaves this run.
-func start_generated_run(seed := -1) -> bool:
-	var chosen := absi(randi()) if seed < 0 else seed
+func start_generated_run(rng_seed := -1) -> bool:
+	var chosen := absi(randi()) if rng_seed < 0 else rng_seed
 	if chosen == 0:
 		chosen = 1
 	if _enter_generated(chosen, 1):
@@ -495,12 +495,12 @@ func _on_reward_picked(id: RunBuild.Id) -> void:
 	restart(RestartReason.EXIT)
 
 
-func _enter_generated(seed: int, level: int) -> bool:
-	var next := RoomGenerator.generate_room(PIECE_LIBRARY, seed, GEN_DIFFICULTY, GEN_PIECE_COUNT)
+func _enter_generated(rng_seed: int, level: int) -> bool:
+	var next := RoomGenerator.generate_room(PIECE_LIBRARY, rng_seed, GEN_DIFFICULTY, GEN_PIECE_COUNT)
 	if next == null:
 		return false
 	gen_active = true
-	gen_seed = seed
+	gen_seed = rng_seed
 	gen_level = level
 	load_room(next)
 	return true
@@ -549,13 +549,13 @@ func _respawn(keep_history := false) -> void:
 	camera.snap_to_target()
 	if replaying:
 		return
-	if keep_history and log.recording:
-		log.mark_respawn()
+	if keep_history and _log.recording:
+		_log.mark_respawn()
 	elif _should_record():
-		log.begin(feet)
+		_log.begin(feet)
 	else:
-		log.stop()
-	_cursor = log.steps.size()
+		_log.stop()
+	_cursor = _log.steps.size()
 
 
 func _begin_transition(reason: RestartReason) -> void:
@@ -567,8 +567,8 @@ func _begin_transition(reason: RestartReason) -> void:
 	camera.clear_shake()
 	room.freeze_entities(false)
 	player.halt()
-	if not replaying and log.recording and reason != RestartReason.EXIT:
-		log.mark_death()
+	if not replaying and _log.recording and reason != RestartReason.EXIT:
+		_log.mark_death()
 	if reason == RestartReason.EXIT:
 		fx.start_exit(player)
 	else:

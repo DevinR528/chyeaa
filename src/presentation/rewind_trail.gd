@@ -14,9 +14,9 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	var show := runner != null and runner.log.recording and _debug_on()
-	visible = show
-	if show:
+	var do_show := runner != null and runner._log.recording and _debug_on()
+	visible = do_show
+	if do_show:
 		queue_redraw()
 
 
@@ -29,9 +29,9 @@ func _debug_on() -> bool:
 
 
 func _draw() -> void:
-	if runner == null or runner.log.trail.is_empty():
+	if runner == null or runner._log.trail.is_empty():
 		return
-	_span(0, mini(runner._cursor, runner.log.trail.size()), Color(0.98, 0.8, 0.08, 0.85))
+	_span(0, mini(runner._cursor, runner._log.trail.size()), Color(0.98, 0.8, 0.08, 0.85))
 
 
 ## State 0 is the spawn. State `i` after that is `trail[i - 1]`.
@@ -41,8 +41,8 @@ func _span(from: int, to: int, color: Color) -> void:
 	var points := PackedVector2Array()
 	for index in range(from, to + 1):
 		if index == 0:
-			points.append(to_local(runner.log.spawn))
-		elif index - 1 < runner.log.trail.size():
-			points.append(to_local(runner.log.trail[index - 1]))
+			points.append(to_local(runner._log.spawn))
+		elif index - 1 < runner._log.trail.size():
+			points.append(to_local(runner._log.trail[index - 1]))
 	if points.size() >= 2:
 		draw_polyline(points, color, 1.0)

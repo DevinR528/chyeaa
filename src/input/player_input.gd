@@ -1,6 +1,8 @@
 class_name PlayerInput
 extends Node
 
+signal camera_pan(pan_move: Vector2)
+
 const EDGE_ACTIONS: Array[StringName] = [
 	&"jump",
 	&"action",
@@ -28,6 +30,12 @@ func consume() -> PlayerInputFrame:
 		Input.get_axis(&"move_up", &"move_down"),
 	)
 	frame.aim = aim_quadrant(frame.move)
+	
+	# Always emitted, including zero, so the camera can ease back when the stick is released.
+	camera_pan.emit(Vector2(
+		Input.get_axis(&"pan_left", &"pan_right"),
+		Input.get_axis(&"pan_up", &"pan_down"),
+	))
 
 	frame.jump_held = Input.is_action_pressed(&"jump")
 	frame.jump_pressed = _consume_pressed(&"jump")

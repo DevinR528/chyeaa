@@ -52,11 +52,11 @@ class SeedRng:
 
 static func generate_layout(
 	library: PieceLibrary,
-	seed := 1,
+	rng_seed := 1,
 	target_difficulty := 3,
 	piece_count := Vector2i(1, 2),
 ) -> Dictionary:
-	var rng := SeedRng.new(seed)
+	var rng := SeedRng.new(rng_seed)
 	var start := library.find_tag(&"cap_start")
 	var finish := library.find_tag(&"cap_end")
 	if start == null or finish == null:
@@ -114,7 +114,7 @@ static func generate_layout(
 		sequence.append(finish)
 		var layout := _place_sequence(sequence, attempt_rng)
 		if not layout.is_empty():
-			return _normalize_layout(layout, seed, target_difficulty)
+			return _normalize_layout(layout, rng_seed, target_difficulty)
 
 	for middle in pool:
 		if not _portals_compatible(start.exit(), middle.entry()):
@@ -123,8 +123,8 @@ static func generate_layout(
 			continue
 		var fallback := _place_sequence([start, middle, finish], rng.fork(0xabc))
 		if not fallback.is_empty():
-			return _normalize_layout(fallback, seed, target_difficulty)
-	push_error("Room generation failed for seed %d" % seed)
+			return _normalize_layout(fallback, rng_seed, target_difficulty)
+	push_error("Room generation failed for rng_seed %d" % rng_seed)
 	return {}
 
 
@@ -169,11 +169,11 @@ static func build_room(layout: Dictionary) -> Room:
 
 static func generate_room(
 	library: PieceLibrary,
-	seed := 1,
+	rng_seed := 1,
 	target_difficulty := 3,
 	piece_count := Vector2i(1, 2),
 ) -> Room:
-	return build_room(generate_layout(library, seed, target_difficulty, piece_count))
+	return build_room(generate_layout(library, rng_seed, target_difficulty, piece_count))
 
 
 static func _place_sequence(sequence: Array[PieceData], rng: SeedRng) -> Dictionary:
@@ -253,7 +253,7 @@ static func _place_after(previous: Dictionary, next_piece: PieceData, length: in
 	return {"piece": next_piece, "ox": ox, "oy": oy}
 
 
-static func _normalize_layout(layout: Dictionary, seed: int, target: int) -> Dictionary:
+static func _normalize_layout(layout: Dictionary, rng_seed: int, target: int) -> Dictionary:
 	var min_x := 1 << 30
 	var min_y := 1 << 30
 	for placement: Dictionary in layout.placed:
@@ -284,7 +284,7 @@ static func _normalize_layout(layout: Dictionary, seed: int, target: int) -> Dic
 		max_y = maxi(max_y, shifted.x + 2)
 	var start: Dictionary = shifted_placed[0]
 	return {
-		"id": &"gen_%d_%d" % [seed, target],
+		"id": &"gen_%d_%d" % [rng_seed, target],
 		"placed": shifted_placed,
 		"flex_runs": shifted_flex,
 		"cols": maxi(8, max_x + 2),

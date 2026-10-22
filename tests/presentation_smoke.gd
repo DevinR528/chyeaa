@@ -13,6 +13,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_check_screen_shake()
+	_check_camera_pan()
 	_check_vignette_values()
 	await _check_pogo_shake_order()
 	quit(1 if _failed else 0)
@@ -34,6 +35,42 @@ func _check_screen_shake() -> void:
 	camera.free()
 	shake.clear()
 	_expect(not shake.is_active() and shake.offset == Vector2.ZERO, "shake clear left active state")
+
+
+func _check_camera_pan() -> void:
+	var camera := FollowCamera.new()
+	camera.PAN_MAX_X = 70.0
+	camera.PAN_MAX_Y = 100.0
+	camera.PAN_SPEED = 200.0
+	camera.on_camera_pan(Vector2.RIGHT)
+	var blend := 1.0 - exp(-0.1 * camera.PAN_SPEED / camera.PAN_MAX_Y)
+	camera._process(0.1)
+	var first := camera.offset.x
+	_expect(is_equal_approx(first, camera.PAN_MAX_X * blend), "pan did not follow the ease curve, offset %s" % camera.offset)
+	camera._process(0.1)
+	var second := camera.offset.x - first
+	_expect(second < first, "pan did not slow as it approached the limit, steps %s then %s" % [first, second])
+	for _step in 40:
+		camera._process(0.1)
+	_expect(camera.offset.x > camera.PAN_MAX_X - 0.5 and camera.offset.x <= camera.PAN_MAX_X, "horizontal pan missed its limit, offset %s" % camera.offset)
+	camera.on_camera_pan(Vector2.DOWN)
+	for _step in 40:
+		camera._process(0.1)
+	_expect(camera.offset.y > camera.PAN_MAX_X and camera.offset.y <= camera.PAN_MAX_Y, "vertical pan did not outrange horizontal, offset %s" % camera.offset)
+	var stick := Vector2(1.0, 1.0).limit_length(1.0)
+	camera.on_camera_pan(Vector2(1.0, 1.0))
+	for _step in 40:
+		camera._process(0.1)
+	var nx := camera.offset.x / camera.PAN_MAX_X
+	var ny := camera.offset.y / camera.PAN_MAX_Y
+	var diagonal := Vector2(stick.x * camera.PAN_MAX_X, stick.y * camera.PAN_MAX_Y)
+	_expect(nx * nx + ny * ny <= 1.001, "diagonal pan left the limit ellipse, offset %s" % camera.offset)
+	_expect(camera.offset.distance_to(diagonal) < 0.05, "diagonal pan missed the ellipse, offset %s" % camera.offset)
+	camera.on_camera_pan(Vector2.ZERO)
+	for _step in 40:
+		camera._process(0.1)
+	_expect(camera.offset.length() < 0.5, "released pan did not return home, offset %s" % camera.offset)
+	camera.free()
 
 
 func _check_vignette_values() -> void:

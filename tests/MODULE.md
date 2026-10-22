@@ -50,7 +50,8 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   extra section, fullscreen keeping the windowed rect, and pulling a saved
   window onto a screen that exists.
 - `presentation_smoke.gd` — quadratic screen-shake decay/replacement/direction,
-  vignette screen coordinates and radii, and Pogo shake beginning after hitstop.
+  camera pan slowing into a shorter horizontal limit, vignette screen coordinates and
+  radii, and Pogo shake beginning after hitstop.
 - `fx_smoke.gd` — death and exit effects delay the respawn and the reward menu,
   a dash does not keep its speed through that respawn, and the dash trail fades.
 - `pieces_smoke.gd` — imported scene structure, portal placement, flex corridors,
