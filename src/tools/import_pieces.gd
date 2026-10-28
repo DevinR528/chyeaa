@@ -1,5 +1,6 @@
 extends SceneTree
-## Repeatable standalone import from the JavaScript piece editor's JSON.
+## Import from the JavaScript piece JSON. Pieces saved by the in-game editor
+## (`authored_in_editor`) are kept as-is, including ones the JSON index lacks.
 ##
 ## Run from the repo root:
 ##   godot --headless --path . --script res://src/tools/import_pieces.gd
@@ -36,12 +37,24 @@ func _import() -> int:
 
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SCENE_DIR))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(RESOURCE_DIR))
+	var kept := _existing_by_id()
+	var seen := {}
 	var imported: Array[PieceData] = []
 	for document in documents:
+		var id := StringName(String(document.id))
+		seen[id] = true
+		var current: PieceData = kept.get(id)
+		if PieceWriter.import_should_keep(current):
+			imported.append(current)
+			continue
 		var data := _write_piece(document)
 		if data == null:
 			return 1
 		imported.append(data)
+	for id: StringName in kept:
+		var current: PieceData = kept[id]
+		if not seen.has(id) and PieceWriter.import_should_keep(current):
+			imported.append(current)
 	var library := PieceLibrary.new()
 	library.pieces = imported
 	if ResourceSaver.save(library, LIBRARY_PATH) != OK:
@@ -57,6 +70,8 @@ func _write_piece(document: Dictionary) -> PieceData:
 	var resource_path := RESOURCE_DIR.path_join(id + ".tres")
 	if ResourceLoader.exists(resource_path):
 		var existing := load(resource_path) as PieceData
+		if PieceWriter.import_should_keep(existing):
+			return existing
 		if (
 			existing != null
 			and existing.source_hash == String(document._import_hash)
@@ -289,6 +304,18 @@ func _facing(value: String) -> PieceData.Facing:
 		"down":
 			return PieceData.Facing.DOWN
 	return PieceData.Facing.LEFT
+
+
+func _existing_by_id() -> Dictionary:
+	var found := {}
+	if not ResourceLoader.exists(LIBRARY_PATH):
+		return found
+	var library := load(LIBRARY_PATH) as PieceLibrary
+	if library == null:
+		return found
+	for piece in library.pieces:
+		found[piece.piece_id] = piece
+	return found
 
 
 func _read_json(path: String) -> Dictionary:

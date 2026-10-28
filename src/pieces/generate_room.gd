@@ -10,6 +10,7 @@ const FLEX_SHELL := 3
 const MIN_APERTURE_H := 4
 const MIN_APERTURE_W := 3
 const KIND_TILES := preload("res://resources/tiles/kind_tiles.tres")
+const DEFAULT_SKIN := preload("res://resources/biomes/earth.tres")
 const RoomScript := preload("res://src/rooms/room.gd")
 
 const OPPOSITE := {
@@ -128,7 +129,7 @@ static func generate_layout(
 	return {}
 
 
-static func build_room(layout: Dictionary) -> Room:
+static func build_room(layout: Dictionary, skin: BiomeSkin = null) -> Room:
 	if layout.is_empty():
 		return null
 	var room := Node2D.new()
@@ -164,6 +165,9 @@ static func build_room(layout: Dictionary) -> Room:
 	spawn.name = &"Spawn"
 	spawn.position = layout.spawn_feet
 	room.add_child(spawn)
+	var applied := skin if skin != null else DEFAULT_SKIN
+	if applied != null:
+		applied.apply(room)
 	return room as Room
 
 
@@ -172,8 +176,9 @@ static func generate_room(
 	rng_seed := 1,
 	target_difficulty := 3,
 	piece_count := Vector2i(1, 2),
+	skin: BiomeSkin = null,
 ) -> Room:
-	return build_room(generate_layout(library, rng_seed, target_difficulty, piece_count))
+	return build_room(generate_layout(library, rng_seed, target_difficulty, piece_count), skin)
 
 
 static func _place_sequence(sequence: Array[PieceData], rng: SeedRng) -> Dictionary:

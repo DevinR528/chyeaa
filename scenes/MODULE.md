@@ -33,10 +33,10 @@ Standard, Grappler, and Pogo.
   the root, so no Editable Children is needed. Both process after props and
   before the player (physics priority 5).
 
-- `pieces/` — generated placeholder-art scenes from the JavaScript piece editor.
-  Re-run `src/tools/import_pieces.gd`; do not hand-edit these outputs.
+- `pieces/` — piece scenes. The in-game editor writes these. `import_pieces.gd`
+  fills ids the editor has not saved and will not overwrite editor-authored pieces.
 
 Planned folders: `dev/`. `ui/` holds the run HUD, the centered pause menu
 (resume, restart, generated run), the potion picker, and the exit reward menu
-(`reward_menu.tscn`). A generated run shows its level number on that menu.
+(`reward_menu.tscn`), and the pause menu's piece editor. A generated run shows its level number on that menu.
 Scripts referenced by these scenes live under `res://src/`.

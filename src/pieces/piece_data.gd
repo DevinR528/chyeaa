@@ -1,6 +1,6 @@
 class_name PieceData
 extends Resource
-## Imported metadata beside one generated piece scene.
+## Metadata beside one piece scene. Editor saves set `authored_in_editor`.
 
 enum Facing {
 	LEFT,
@@ -10,8 +10,10 @@ enum Facing {
 }
 
 @export var piece_id := &""
-## Importer version plus source JSON hash; unchanged pieces are not rewritten.
+## Importer version plus source JSON hash, or "editor" after an in-game save.
 @export var source_hash := ""
+## Set when the in-game editor saves this piece. JSON import will not overwrite it.
+@export var authored_in_editor := false
 @export var cols := 0
 @export var rows := 0
 @export_range(1, 10, 1) var difficulty := 1

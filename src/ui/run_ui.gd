@@ -7,7 +7,7 @@ extends CanvasLayer
 
 const OPTION_MENU := preload("res://scenes/ui/option_menu.tscn")
 
-const PAUSE_ACTIONS: Array[String] = ["Resume", "Restart room", "Generated run", "Volume"]
+const PAUSE_ACTIONS: Array[String] = ["Resume", "Restart room", "Generated run", "Piece editor", "Volume"]
 
 var ticks := 0
 var picker_open := false
@@ -25,6 +25,7 @@ var _picker: Control
 var _picker_rows: VBoxContainer
 var _rewind: RewindScreen
 var _opt_menu: OptionMenu
+var _editor: PieceEditor
 
 
 func _ready() -> void:
@@ -55,6 +56,8 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	ticks += 1
+	if _editor_blocks():
+		return
 	_refresh_hud()
 	if _reward_open() or (_rewind != null and _rewind.open):
 		return
@@ -192,6 +195,14 @@ func _confirm_pause() -> void:
 		print("STUFF AND THANGS")
 		return
 
+	if action == 3:
+		pause_open = false
+		_pause.hide()
+		if runner != null:
+			get_tree().paused = true
+			_ensure_editor().open(runner)
+		return
+
 	close_pause()
 	if runner == null:
 		return
@@ -228,6 +239,22 @@ func _steer_options() -> void:
 			pass
 	elif Input.is_action_just_pressed(&"pause"):
 		close_option()
+
+
+func _editor_blocks() -> bool:
+	if _editor == null:
+		return false
+	if _editor.ate_pause:
+		_editor.ate_pause = false
+		return true
+	return _editor.active
+
+
+func _ensure_editor() -> PieceEditor:
+	if _editor == null:
+		_editor = PieceEditor.new()
+		_editor.name = &"PieceEditor"
+	return _editor
 
 
 func _pause_label(index: int) -> String:

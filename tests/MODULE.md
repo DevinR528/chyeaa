@@ -56,6 +56,10 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   a dash does not keep its speed through that respawn, and the dash trail fades.
 - `pieces_smoke.gd` — imported scene structure, portal placement, flex corridors,
   overlap rejection, caps/budget/determinism, and a generated Room in RoomRunner.
+- `piece_editor_smoke.gd` — brush size, kind-cell paint, portal rejection, deleting
+  a placed block, the info panel, opening a library piece, windmill sliders,
+  save round-trip, empty biome skin, one art-tile rule, the pause row, and
+  playtest returning to the same unsaved piece.
 - `block_terrain_smoke.gd` — 32 px art tiles on 8 px cells (also flipped and
   transposed) answer the room's cell queries wherever physics says they collide,
   hold the player up, and death blocks are a hazard. Every tile in the demo's

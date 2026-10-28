@@ -1,6 +1,6 @@
 ﻿# Room generation from level pieces
 
-Status: **deferred** — piece authoring is done; stitcher / flex / `generate_room` not started.
+Status: **authoring in Godot** — the in-game piece editor (`src/pieces/piece_editor.gd`) is the source of truth. Pieces store kind cells. `BiomeSkin` applies art tiles in `build_room`, not at save time. The stitcher lives in `src/pieces/generate_room.gd`. The JavaScript JSON import skips pieces marked `authored_in_editor`.
 Canonical tracked copy (git). Cursor agent plan may mirror this.
 
 ## Goal
@@ -376,7 +376,9 @@ def generate_room(req: RoomGenRequest, library: list[PieceDef]) -> RoomDocument:
 
 ---
 
-## Authoring (done)
+## Authoring
+
+Godot's pause menu opens the piece editor. Info lists the controls. Delete removes a selected stamp, and Erase also removes a placed object under the click. Saves write `scenes/pieces` and `resources/pieces` and do not bake biome art. The notes below describe the earlier JavaScript editor, which can still import any piece the Godot editor has not saved.
 
 1. **Data + IO** — `PieceDef` in `src/level/piece_document.ts`, validate, `assets/pieces`, `POST /api/pieces/:id`, caps tagged `cap_start` / `cap_end`
 2. **Piece editor** — hub Room \| Piece, portals, metadata, library, duplicate, playtest, ghost, validate

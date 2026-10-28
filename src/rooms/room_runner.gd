@@ -426,6 +426,18 @@ func return_to_demo() -> void:
 	load_room(DEMO_ROOM.instantiate() as Room)
 
 
+## Pull the live room out of the tree without freeing it. Clears the player's
+## room pointer so a detached room is not ticked. The piece editor holds it.
+func detach_room() -> Room:
+	var previous := room
+	room = null
+	if previous != null and previous.get_parent() == self:
+		remove_child(previous)
+	if player != null:
+		player.room = null
+	return previous
+
+
 func load_room(next: Room) -> void:
 	var previous := room
 	room = next

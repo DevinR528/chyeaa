@@ -41,9 +41,11 @@ Typed GDScript only. Scenes and imported assets do not live here.
   signal: each decides its own reaction in the handler and applies it at the
   start of its own tick, so the order Godot delivers the pair's signals never
   matters. Read the class comment before adding a contact reaction.
-- `pieces/` — `PieceData`/`PieceLibrary` metadata plus seeded portal matching,
-  flex corridors, overlap rejection, and runtime Room assembly in
-  `generate_room.gd`. Runtime code reads imported Godot resources, never JSON.
+- `pieces/` — `PieceData`/`PieceLibrary` metadata, the in-game piece editor,
+  and seeded portal matching, flex corridors, overlap rejection, and runtime
+  Room assembly in `generate_room.gd`. A saved piece stores kind cells.
+  `BiomeSkin` swaps in art tiles when a room is built, and leaves the rest on
+  kind tiles. Runtime code reads Godot resources, never JSON.
 - `presentation/` — camera, backdrop, character sprites, and the `FullscreenToggle`
   autoload. F11 grows the window through quarter-scale 840x504 steps and then
   enters fullscreen; Shift+F11 shrinks it. Manual resizing uses fractional
@@ -89,9 +91,9 @@ Code that real art or animation will replace is grouped in
   `import_demo_room.gd` already ran; re-running overwrites Godot edits to the demo room.
   `import_demo_entities.gd` already ran; re-running replaces the demo room's `Props` node.
   `import_demo_actors.gd` already ran; re-running replaces the demo room's `Actors` node.
-  `import_pieces.gd` is a repeatable standalone importer because pieces continue
-  to be authored in the JavaScript editor; unchanged source fingerprints leave
-  generated scenes/resources byte-identical.
+  `import_pieces.gd` still imports the JavaScript piece JSON. It skips any piece
+  the in-game editor has saved (`authored_in_editor`), and unchanged source
+  fingerprints leave the remaining generated scenes byte-identical.
   `sync_art.gd` is ongoing: it copies the art Godot uses from the prototype's
   `../idea/assets` (animation, backdrop, and tile sheets) and rebuilds each animation's
   AnimationLibrary. Re-run after exporting art; generated tracks are replaced
