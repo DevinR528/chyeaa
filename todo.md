@@ -60,6 +60,12 @@ state when binding and caches later signal updates for all/any evaluation.
    - we could play these at 2-3x speed (this is typically how it's done)
  - The tileset can be slightly isometric we just can't have top/bottom on the same 32pixel tile... fucking duh
  - skid/turn animation
+ - All ability BLOCKS!!!
+ - finish death blocks
+ - windmill sprite
+ - on/off switch sprite
+ - bouncy "bullet bill" thing
+ - bouncy "mushroom" (a trampoline)
 
 
 ## Bugs

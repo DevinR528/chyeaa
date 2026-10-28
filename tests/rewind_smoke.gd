@@ -77,7 +77,7 @@ func _check_replay() -> void:
 	var walker_at := walker.global_position
 	var ball_at := ball.global_position
 	var platform_at := platform.global_position
-	var total := runner.log.steps.size()
+	var total: int = runner.log.steps.size()
 	_expect(total > 10, "rewind log did not record the run, length %d" % total)
 	_expect(runner.log.trail.size() == total, "trail length %d did not match the log %d" % [runner.log.trail.size(), total])
 	var far := camera.get_screen_center_position()
@@ -125,7 +125,7 @@ func _check_replay() -> void:
 	var rewind: RewindPotion = runner.belt.potion(RunBuild.Id.REWIND)
 	checkpoint.uses = 1
 	rewind.uses = 2
-	var at_drink := runner.log.steps.size()
+	var at_drink: int = runner.log.steps.size()
 	runner.drink_potion(RunBuild.Id.CHECKPOINT)
 	_expect(room.checkpoint is Vector2, "checkpoint did not plant before the scrub")
 	for _frame in 8:
@@ -167,13 +167,13 @@ func _check_replay() -> void:
 	_expect(not room.checkpoint is Vector2, "commit kept the checkpoint it had scrubbed away")
 
 	reach.visible = false
-	var steps_hidden := runner.log.steps.size()
-	var trail_hidden := runner.log.trail.size()
+	var steps_hidden: int = runner.log.steps.size()
+	var trail_hidden: int = runner.log.trail.size()
 	runner._note_input(PlayerInputFrame.new(), 1.0 / 60.0)
 	runner._note_trail()
 	_expect(runner.log.steps.size() == steps_hidden + 1, "a rewind charge stopped the log")
 	_expect(runner.log.trail.size() == trail_hidden, "the trail grew while the overlay was hidden")
-	var lived := runner.log.steps.size()
+	var lived: int = runner.log.steps.size()
 	runner.player.respawn(_cell_feet(room, Vector2i(18, 8)))
 	for _frame in 80:
 		await physics_frame
@@ -184,7 +184,7 @@ func _check_replay() -> void:
 	runner.keep_rewind_history = true
 	for _frame in 10:
 		await physics_frame
-	var kept := runner.log.steps.size()
+	var kept: int = runner.log.steps.size()
 	runner.player.respawn(_cell_feet(room, Vector2i(18, 8)))
 	for _frame in 80:
 		await physics_frame
