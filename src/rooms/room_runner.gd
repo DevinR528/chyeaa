@@ -420,6 +420,25 @@ func start_generated_run(rng_seed := -1) -> bool:
 	return false
 
 
+## Reroll the current generated room. The level and build stay, and the next
+## exit continues from the new seed. No-op outside a generated run.
+func regen_room() -> bool:
+	if not gen_active:
+		return false
+	var level := gen_level
+	var avoid := gen_seed
+	var chosen := absi(randi())
+	if chosen == 0 or chosen == avoid:
+		chosen = avoid + 1
+	for offset in range(0, 1 + GEN_RETRY_SEEDS):
+		var candidate := chosen + offset
+		if candidate == avoid or candidate == 0:
+			continue
+		if _enter_generated(candidate, level):
+			return true
+	return false
+
+
 ## Leave a generated run and play the authored demo. The build stays.
 func return_to_demo() -> void:
 	gen_active = false

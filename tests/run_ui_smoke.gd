@@ -225,6 +225,7 @@ func _check_generated_run() -> void:
 	runner.player.global_position = home + Vector2(64, -32)
 	ui.open_pause()
 	_expect(ui.get_node(^"Pause/Center") is CenterContainer, "pause panel was not centered")
+	_expect("Regen room" not in _pause_text(ui), "regen was offered outside a generated run")
 	Input.action_press(&"move_down")
 	await process_frame
 	Input.action_release(&"move_down")
@@ -281,13 +282,32 @@ func _check_generated_run() -> void:
 	_expect(runner.gen_level == 3 and runner.gen_seed == 3, "an empty offer did not advance, level %d seed %d" % [runner.gen_level, runner.gen_seed])
 
 	var kept_speed := runner.build.stack_count(RunBuild.Id.TOP_SPEED)
+	var rolled_level := runner.gen_level
+	var rolled_seed := runner.gen_seed
+	var rolled_room := runner.room
 	ui.open_pause()
+	_expect("Regen room" in _pause_text(ui), "generated pause omitted regen")
 	_expect("Demo room" in _pause_text(ui), "generated pause still offered a generated run")
 	for _move in 2:
 		Input.action_press(&"move_down")
 		await process_frame
 		Input.action_release(&"move_down")
-	_expect(ui.pause_index == 2, "pause did not land on demo, index %d" % ui.pause_index)
+	_expect(ui.pause_index == 2, "pause did not land on regen, index %d" % ui.pause_index)
+	Input.action_press(&"jump")
+	await process_frame
+	Input.action_release(&"jump")
+	_expect(not ui.pause_open and runner.gen_active, "regen left the pause menu or the run")
+	_expect(runner.gen_level == rolled_level, "regen advanced the level to %d" % runner.gen_level)
+	_expect(runner.gen_seed != rolled_seed, "regen kept seed %d" % runner.gen_seed)
+	_expect(runner.room != rolled_room, "regen reloaded the same room")
+	_expect(runner.build.stack_count(RunBuild.Id.TOP_SPEED) == kept_speed, "regen dropped the build")
+
+	ui.open_pause()
+	for _move in 3:
+		Input.action_press(&"move_down")
+		await process_frame
+		Input.action_release(&"move_down")
+	_expect(ui.pause_index == 3, "pause did not land on demo, index %d" % ui.pause_index)
 	Input.action_press(&"jump")
 	await process_frame
 	Input.action_release(&"jump")

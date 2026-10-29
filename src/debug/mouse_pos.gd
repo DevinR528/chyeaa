@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var _debug: bool = true;
+@export var _debug: bool = false
 @onready var _label: Label = $Label
 
 

@@ -16,8 +16,8 @@ piece stitching. Test-only scenes belong beside the scripts in this folder.
   replay time for a generated room.
 - `run_ui_smoke.gd` — checkpoint plant, replace, undo without a refund, unequip,
   death and fall respawn, exit cleanup, the centered pause menu, a seeded
-  generated run that advances after the reward, the same pause entry returning
-  to the demo, and the potion picker.
+  generated run that advances after the reward, a pause regen that keeps the
+  level and build, the same pause entry returning to the demo, and the potion picker.
 - `debug_smoke.gd` — a fixed run matches with the readout hidden or shown, and
   one stomp is captured as a contact record.
 - `demo_room_smoke.gd` — spawn, landing, character switching and surfaces, and

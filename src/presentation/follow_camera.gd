@@ -3,7 +3,7 @@ extends Camera2D
 ## Tracks the target's origin. The drag margins are the prototype's dead zone, and
 ## position smoothing is its catch-up ease. Limits keep the view inside the room.
 
-@export var _debug: bool = true
+@export var _debug: bool = false
 
 @export_range(-200.0, 700.0) var CAMERA_OFFSET: float = -100.0
 @export var target: Node2D
@@ -130,14 +130,14 @@ func _draw() -> void:
 
 
 func _ease_pan(delta: float) -> Vector2:
-	var target := _pan_target()
+	var p_target := _pan_target()
 	var span := maxf(PAN_MAX_X, PAN_MAX_Y)
 	if span <= 0.0:
 		return Vector2.ZERO
 	if PAN_SPEED <= 0.0:
 		return _pan_offset
 	var blend := 1.0 - exp(-delta * PAN_SPEED / span)
-	return _pan_offset.lerp(target, blend)
+	return _pan_offset.lerp(p_target, blend)
 
 
 func _pan_target() -> Vector2:

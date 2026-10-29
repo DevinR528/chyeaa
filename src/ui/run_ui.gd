@@ -7,8 +7,6 @@ extends CanvasLayer
 
 const OPTION_MENU := preload("res://scenes/ui/option_menu.tscn")
 
-const PAUSE_ACTIONS: Array[String] = ["Resume", "Restart room", "Generated run", "Piece editor", "Volume"]
-
 var ticks := 0
 var picker_open := false
 var pause_open := false
@@ -175,11 +173,12 @@ func confirm_selection() -> bool:
 
 
 func _steer_pause() -> void:
+	var count := _pause_actions().size()
 	if Input.is_action_just_pressed(&"move_up"):
-		pause_index = posmod(pause_index - 1, PAUSE_ACTIONS.size())
+		pause_index = posmod(pause_index - 1, count)
 		_mark_pause()
 	elif Input.is_action_just_pressed(&"move_down"):
-		pause_index = posmod(pause_index + 1, PAUSE_ACTIONS.size())
+		pause_index = posmod(pause_index + 1, count)
 		_mark_pause()
 	elif Input.is_action_just_pressed(&"jump"):
 		_confirm_pause()
@@ -188,14 +187,17 @@ func _steer_pause() -> void:
 
 
 func _confirm_pause() -> void:
-	var action := pause_index
+	var actions := _pause_actions()
+	if pause_index < 0 or pause_index >= actions.size():
+		return
+	var action := actions[pause_index]
 
-	if "Volume" == PAUSE_ACTIONS[action]:
+	if action == "Volume":
 		open_option()
 		print("STUFF AND THANGS")
 		return
 
-	if action == 3:
+	if action == "Piece editor":
 		pause_open = false
 		_pause.hide()
 		if runner != null:
@@ -206,13 +208,14 @@ func _confirm_pause() -> void:
 	close_pause()
 	if runner == null:
 		return
-	if action == 1:
+	if action == "Restart room":
 		runner.restart_room()
-	elif action == 2:
-		if runner.gen_active:
-			runner.return_to_demo()
-		else:
-			runner.start_generated_run()
+	elif action == "Generated run":
+		runner.start_generated_run()
+	elif action == "Demo room":
+		runner.return_to_demo()
+	elif action == "Regen room":
+		runner.regen_room()
 
 
 func _steer_options() -> void:
@@ -257,18 +260,23 @@ func _ensure_editor() -> PieceEditor:
 	return _editor
 
 
-func _pause_label(index: int) -> String:
-	if index == 2 and runner != null and runner.gen_active:
-		return "Demo room"
-	return PAUSE_ACTIONS[index]
+func _pause_actions() -> Array[String]:
+	var actions: Array[String] = ["Resume", "Restart room"]
+	if runner != null and runner.gen_active:
+		actions.append("Regen room")
+	actions.append("Demo room" if runner != null and runner.gen_active else "Generated run")
+	actions.append("Piece editor")
+	actions.append("Volume")
+	return actions
 
 
 func _mark_pause() -> void:
 	for child in _pause_rows.get_children():
 		child.free()
-	for index in PAUSE_ACTIONS.size():
+	var actions := _pause_actions()
+	for index in actions.size():
 		var prefix := "> " if index == pause_index else "  "
-		_pause_rows.add_child(_make_label(prefix + _pause_label(index)))
+		_pause_rows.add_child(_make_label(prefix + actions[index]))
 
 
 func _steer_picker() -> void:

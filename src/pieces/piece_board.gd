@@ -176,27 +176,27 @@ func set_tuned_value(node: Node, property: StringName, value: float) -> bool:
 
 
 func tuning_rows(node: Node) -> Array[Dictionary]:
-	var rows: Array[Dictionary] = []
+	var l_rows: Array[Dictionary] = []
 	if node != null and "size" in node:
 		var size: Vector2 = node.get(&"size")
-		rows.append(_row(&"Width", &"size_x", size.x, 8.0, 256.0, 8.0))
-		rows.append(_row(&"Height", &"size_y", size.y, 8.0, 256.0, 8.0))
+		l_rows.append(_row(&"Width", &"size_x", size.x, 8.0, 256.0, 8.0))
+		l_rows.append(_row(&"Height", &"size_y", size.y, 8.0, 256.0, 8.0))
 	var spin := _spin(node)
 	if spin != null:
-		rows.append(_row(&"Radius", &"radius", spin.radius, 8.0, 256.0, 1.0))
-		rows.append(_row(&"Turns / s", &"turns_per_second", spin.turns_per_second, -2.0, 2.0, 0.05))
-		rows.append(_row(&"Start turn", &"start_turn", spin.start_turn, 0.0, 1.0, 0.05))
+		l_rows.append(_row(&"Radius", &"radius", spin.radius, 8.0, 256.0, 1.0))
+		l_rows.append(_row(&"Turns / s", &"turns_per_second", spin.turns_per_second, -2.0, 2.0, 0.05))
+		l_rows.append(_row(&"Start turn", &"start_turn", spin.start_turn, 0.0, 1.0, 0.05))
 	var motion := _oscillation(node)
 	if motion != null:
-		rows.append(_row(&"Travel", &"travel", motion.travel, 8.0, 256.0, 1.0))
-		rows.append(_row(&"Speed", &"speed", motion.speed, 0.0, 8.0, 0.05))
+		l_rows.append(_row(&"Travel", &"travel", motion.travel, 8.0, 256.0, 1.0))
+		l_rows.append(_row(&"Speed", &"speed", motion.speed, 0.0, 8.0, 0.05))
 	elif node is Walker:
-		rows.append(_row(&"Speed", &"speed", (node as Walker).speed, 0.0, 400.0, 1.0))
+		l_rows.append(_row(&"Speed", &"speed", (node as Walker).speed, 0.0, 400.0, 1.0))
 	else:
 		var path := _path(node)
 		if path != null:
-			rows.append(_row(&"Path speed", &"speed", path.speed, 0.0, 400.0, 1.0))
-	return rows
+			l_rows.append(_row(&"Path speed", &"speed", path.speed, 0.0, 400.0, 1.0))
+	return l_rows
 
 
 ## Both ends must share an outer edge, and the opening must fit the player.

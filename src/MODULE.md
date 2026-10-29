@@ -15,8 +15,9 @@ Typed GDScript only. Scenes and imported assets do not live here.
 - `input/` — action sampling, press latching, and aim.
 - `rooms/` — `Room` (tile layers, cell kind and solidity queries, kill plane,
   out-of-bounds walls) and `RoomRunner` (character spawn and switching, hitstop,
-  restarts on fall, exit, and death). Pause can start a generated run, and that
-  same entry returns to the authored demo while one is active. The exit
+  restarts on fall, exit, and death). Pause can start a generated run, reroll
+  the current generated room without advancing the level, and that same entry
+  returns to the authored demo while one is active. The exit
   offers a reward, then the next room uses the following seed at the same
   difficulty. Kind and solidity ask the physics space,
   so a shape counts wherever it reaches. Grapple and pogo tiles are sensor
