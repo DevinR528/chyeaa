@@ -484,7 +484,7 @@ func restart(reason: RestartReason) -> void:
 		return
 	if reason == RestartReason.EXIT and not _exit_reward_chosen:
 		if reward_menu != null:
-			var offer := build.roll_offer()
+			var offer := build.roll_offer(3, Callable(), player)
 			if not offer.is_empty():
 				_pending_restart = NO_RESTART
 				reward_menu.open_offer(offer, gen_level if gen_active else 0)

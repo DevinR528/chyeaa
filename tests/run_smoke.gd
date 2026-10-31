@@ -63,6 +63,36 @@ func _check_offer() -> void:
 		RunBuild.describe(RunBuild.Id.CHECKPOINT).contains("plant a respawn flag"),
 		"checkpoint card did not say what the potion does",
 	)
+	_expect(RunBuild.rarity_of(RunBuild.Id.DOUBLE_JUMP) == RunBuild.Rarity.RARE, "double jump was not rare")
+	_expect(RunBuild.rarity_of(RunBuild.Id.TOP_SPEED) == RunBuild.Rarity.COMMON, "top speed was not common")
+	_expect(
+		RunBuild.describe(RunBuild.Id.DOUBLE_JUMP).contains("air jump")
+		and RunBuild.describe(RunBuild.Id.DOUBLE_JUMP).contains("12%"),
+		"double jump card did not name the air jump and height penalty",
+	)
+	var only_double := RunBuild.new()
+	for id: RunBuild.Id in RunBuild._ORDER:
+		if id == RunBuild.Id.DOUBLE_JUMP:
+			continue
+		while only_double.stack_count(id) < RunBuild.MAX_STACKS[id]:
+			only_double.add_stack(id)
+	_expect(
+		only_double.roll_offer() == [RunBuild.Id.DOUBLE_JUMP],
+		"a build with room only for double jump did not offer it",
+	)
+	var pogo := POGO_SCENE.instantiate() as PlayerBody
+	var grappler := preload("res://scenes/player/grappler.tscn").instantiate() as PlayerBody
+	var for_pogo := RunBuild.new().roll_offer(20, func() -> float: return 0.0, pogo)
+	var for_grappler := RunBuild.new().roll_offer(20, func() -> float: return 0.0, grappler)
+	var for_anyone := RunBuild.new().roll_offer(20, func() -> float: return 0.0)
+	_expect(for_pogo.has(RunBuild.Id.POGO_HEIGHT), "pogo was not offered pogo height")
+	_expect(not for_pogo.has(RunBuild.Id.GRAPPLE_REACH), "pogo was offered grapple reach")
+	_expect(for_grappler.has(RunBuild.Id.GRAPPLE_REACH), "grappler was not offered grapple reach")
+	_expect(not for_grappler.has(RunBuild.Id.POGO_HEIGHT), "grappler was offered pogo height")
+	_expect(not for_anyone.has(RunBuild.Id.POGO_HEIGHT), "a character-less offer included pogo height")
+	_expect(not for_anyone.has(RunBuild.Id.GRAPPLE_REACH), "a character-less offer included grapple reach")
+	pogo.free()
+	grappler.free()
 
 
 func _check_formulas() -> void:
@@ -112,6 +142,31 @@ func _check_formulas() -> void:
 	var twice := jump.recompute(base)
 	_expect(is_equal_approx(twice.jump_velocity, once.jump_velocity), "recomputing compounded jump height")
 
+	var double_jump := RunBuild.new()
+	double_jump.add_stack(RunBuild.Id.DOUBLE_JUMP)
+	var with_air := double_jump.recompute(base)
+	_expect(with_air.air_jumps == base.air_jumps + 1, "double jump did not add one air jump")
+	_expect(
+		is_equal_approx(with_air.jump_velocity, base.jump_velocity * 0.88),
+		"double jump was not −12% |jump velocity|",
+	)
+	double_jump.add_stack(RunBuild.Id.JUMP_HEIGHT)
+	var composed := double_jump.recompute(base)
+	_expect(
+		is_equal_approx(composed.jump_velocity, base.jump_velocity * 1.08 * 0.88),
+		"double jump did not multiply after jump height",
+	)
+	_expect(composed.air_jumps == base.air_jumps + 1, "jump height stacks changed air jumps")
+
+	var double_dash := RunBuild.new()
+	double_dash.add_stack(RunBuild.Id.DOUBLE_DASH)
+	var with_dash := double_dash.recompute(base)
+	_expect(with_dash.dash_charges == base.dash_charges + 1, "double dash did not add one dash charge")
+	_expect(
+		is_equal_approx(with_dash.dash_duration, base.dash_duration * 0.88),
+		"double dash was not −12% dash distance",
+	)
+
 
 func _check_summary() -> void:
 	var build := RunBuild.new()
@@ -150,6 +205,31 @@ func _check_character_switch() -> void:
 	standard.free()
 	pogo.free()
 
+	var pogo_body := POGO_SCENE.instantiate() as PlayerBody
+	var grappler_body := preload("res://scenes/player/grappler.tscn").instantiate() as PlayerBody
+	root.add_child(pogo_body)
+	root.add_child(grappler_body)
+	var strike := pogo_body.ability as PogoStrike
+	var hook := grappler_body.ability as Grapple
+	var bounce := strike.bounce_tiles
+	var reach := hook.reach_tiles
+	var height := RunBuild.new()
+	height.add_stack(RunBuild.Id.POGO_HEIGHT)
+	var reach_build := RunBuild.new()
+	reach_build.add_stack(RunBuild.Id.GRAPPLE_REACH)
+	pogo_body.apply_build(height)
+	pogo_body.apply_build(height)
+	grappler_body.apply_build(reach_build)
+	grappler_body.apply_build(reach_build)
+	_expect(is_equal_approx(strike.bounce_tiles, bounce * 1.08), "pogo height was not +8%")
+	_expect(is_equal_approx(hook.reach_tiles, reach * 1.08), "grapple reach was not +8%")
+	pogo_body.apply_build(RunBuild.new())
+	grappler_body.apply_build(RunBuild.new())
+	_expect(is_equal_approx(strike.bounce_tiles, bounce), "clearing the build left the pogo taller")
+	_expect(is_equal_approx(hook.reach_tiles, reach), "clearing the build left the grapple longer")
+	pogo_body.free()
+	grappler_body.free()
+
 
 func _check_jump_and_slow_time() -> void:
 	var ticks := Engine.physics_ticks_per_second
@@ -158,6 +238,16 @@ func _check_jump_and_slow_time() -> void:
 	await _settle(player)
 
 	var plain_rise := await _jump_rise(player)
+	_expect(player.is_on_floor(), "player was not grounded before double-jump apply")
+	player.air_jumps_left = 0
+	var air_build := RunBuild.new()
+	air_build.add_stack(RunBuild.Id.DOUBLE_JUMP)
+	player.apply_build(air_build)
+	_expect(player.stats.air_jumps == 1, "double jump build did not set air_jumps")
+	_expect(player.air_jumps_left == 1, "grounded apply_build did not refill air_jumps_left")
+	player.apply_build(RunBuild.new())
+	_expect(player.air_jumps_left == 0, "clearing double jump left air jumps")
+
 	var jump_build := RunBuild.new()
 	for _i in 5:
 		jump_build.add_stack(RunBuild.Id.JUMP_HEIGHT)

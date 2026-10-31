@@ -48,6 +48,8 @@ func _run() -> void:
 	_check_coyote_time(player)
 	_check_jump_buffer(player)
 	_check_jump_cut(player)
+	_check_air_jump(player)
+	_check_double_dash(player)
 
 	main.queue_free()
 	await process_frame
@@ -113,6 +115,46 @@ func _check_jump_buffer(player: PlayerBody) -> void:
 	player._tick_timers(0.08, landing_frame, true)
 	player._update_motion(0.0, landing_frame, true)
 	_expect(player.velocity.y == player.stats.jump_velocity, "buffered jump did not fire on landing")
+
+
+func _check_air_jump(player: PlayerBody) -> void:
+	player.move_state = PlayerBody.MovementState.FALL
+	player.velocity = Vector2.ZERO
+	player.coyote_time_left = 0.0
+	player.jump_buffer_left = 0.0
+	player.stats.air_jumps = 1
+	player.air_jumps_left = 1
+
+	var frame := PlayerInputFrame.new()
+	frame.jump_pressed = true
+	frame.jump_held = true
+	player._tick_timers(0.0, frame, false)
+	player._update_motion(0.0, frame, false)
+
+	_expect(player.air_jumps_left == 0, "air jump did not consume the charge")
+	_expect(player.velocity.y == player.stats.jump_velocity, "air jump did not launch upward")
+
+
+func _check_double_dash(player: PlayerBody) -> void:
+	player.stats.dash_charges = 2
+	player.dashes_left = 2
+	player.dash_cooldown_left = 0.0
+	player.move_state = PlayerBody.MovementState.FALL
+	var frame := PlayerInputFrame.new()
+	frame.dash_pressed = true
+	player._try_dash(frame)
+	_expect(player.dashes_left == 1, "the first dash did not spend a charge")
+	_expect(is_zero_approx(player.dash_cooldown_left), "the first of two dashes started the cooldown")
+	player.move_state = PlayerBody.MovementState.FALL
+	player._try_dash(frame)
+	_expect(player.dashes_left == 0, "the second dash did not spend the last charge")
+	_expect(is_equal_approx(player.dash_cooldown_left, player.stats.dash_cooldown), "empty dash charges did not start the cooldown")
+	player.move_state = PlayerBody.MovementState.FALL
+	player._try_dash(frame)
+	_expect(player.move_state != PlayerBody.MovementState.DASH, "a third dash fired with no charges")
+	player.refresh_dash()
+	_expect(player.dashes_left == 2, "refresh did not restore both dash charges")
+	_expect(is_zero_approx(player.dash_cooldown_left), "refresh left the dash on cooldown")
 
 
 func _check_jump_cut(player: PlayerBody) -> void:

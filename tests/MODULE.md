@@ -4,10 +4,12 @@ Headless tests for movement feel, abilities, contacts, moving platforms, and
 piece stitching. Test-only scenes belong beside the scripts in this folder.
 
 - `locomotion_smoke.gd` — input latching, run, jump, dash, coyote, buffer, jump
-  cut, and Pogo's constant physical speed during its visual stride.
-- `run_smoke.gd` — stack caps, every build formula, summary text, no compounding
-  across a character switch, jump-height apex, and slow-time distance at an
-  unchanged physics tick rate.
+  cut, air jump, a second dash charge, and Pogo's constant physical speed during
+  its visual stride.
+- `run_smoke.gd` — stack caps, every build formula (including rare Double Jump
+  and Double Dash), character-only pogo height and grapple reach, rarity,
+  summary text, no compounding across a character switch, jump-height apex, and
+  slow-time distance at an unchanged physics tick rate.
 - `rewind_smoke.gd` — input replay of a platform, walker, and throwable; the rewind
   trail and camera follow the scrub; checkpoint undo on the way back; drinking
   rewind leaves the scrub open; commit spends a charge and cancel does not;

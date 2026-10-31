@@ -41,7 +41,11 @@ func open_offer(offer: Array, level := 0) -> void:
 		card.visible = shown
 		if shown:
 			var id := _ids[index]
-			card.text = "%s\n%s" % [RunBuild.name_of(id), RunBuild.describe(id)]
+			card.text = "%s · %s\n%s" % [
+				RunBuild.rarity_name(RunBuild.rarity_of(id)),
+				RunBuild.name_of(id),
+				RunBuild.describe(id),
+			]
 	_mark()
 	($Root as Control).show()
 

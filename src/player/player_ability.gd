@@ -39,6 +39,11 @@ func on_jump_consumed() -> void:
 	pass
 
 
+## Run rewards that tune this ability. The default ignores the build.
+func apply_build(_build: RunBuild) -> void:
+	pass
+
+
 ## True while held horizontal input must not steer locomotion.
 func locks_horizontal_input() -> bool:
 	return false

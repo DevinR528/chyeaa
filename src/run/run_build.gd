@@ -10,6 +10,15 @@ enum Id {
 	SLOW_FALL,
 	CHECKPOINT,
 	REWIND,
+	DOUBLE_JUMP,
+	DOUBLE_DASH,
+	POGO_HEIGHT,
+	GRAPPLE_REACH,
+}
+
+enum Rarity {
+	COMMON,
+	RARE,
 }
 
 const MAX_STACKS: Dictionary[Id, int] = {
@@ -19,6 +28,23 @@ const MAX_STACKS: Dictionary[Id, int] = {
 	Id.SLOW_FALL: 5,
 	Id.CHECKPOINT: 1,
 	Id.REWIND: 1,
+	Id.DOUBLE_JUMP: 1,
+	Id.DOUBLE_DASH: 1,
+	Id.POGO_HEIGHT: 5,
+	Id.GRAPPLE_REACH: 5,
+}
+
+const RARITY: Dictionary[Id, Rarity] = {
+	Id.SLOW_TIME: Rarity.COMMON,
+	Id.TOP_SPEED: Rarity.COMMON,
+	Id.JUMP_HEIGHT: Rarity.COMMON,
+	Id.SLOW_FALL: Rarity.COMMON,
+	Id.CHECKPOINT: Rarity.COMMON,
+	Id.REWIND: Rarity.COMMON,
+	Id.DOUBLE_JUMP: Rarity.RARE,
+	Id.DOUBLE_DASH: Rarity.RARE,
+	Id.POGO_HEIGHT: Rarity.COMMON,
+	Id.GRAPPLE_REACH: Rarity.COMMON,
 }
 
 const _ORDER: Array[Id] = [
@@ -28,6 +54,10 @@ const _ORDER: Array[Id] = [
 	Id.SLOW_FALL,
 	Id.CHECKPOINT,
 	Id.REWIND,
+	Id.DOUBLE_JUMP,
+	Id.DOUBLE_DASH,
+	Id.POGO_HEIGHT,
+	Id.GRAPPLE_REACH,
 ]
 
 const SLOW_TIME_PER_STACK := 0.05
@@ -35,6 +65,10 @@ const SLOW_TIME_MAX := 0.2
 const TOP_SPEED_PER_STACK := 0.12
 const JUMP_HEIGHT_PER_STACK := 0.08
 const SLOW_FALL_PER_STACK := 0.12
+const DOUBLE_JUMP_HEIGHT_PENALTY := 0.12
+const DOUBLE_DASH_DISTANCE_PENALTY := 0.12
+const POGO_HEIGHT_PER_STACK := 0.08
+const GRAPPLE_REACH_PER_STACK := 0.08
 
 var stacks: Dictionary[Id, int] = {}
 ## 1 is normal. Slow Time lowers it to a floor of 0.8. Gameplay multiplies its
@@ -82,6 +116,14 @@ func recompute(base: MovementStats) -> MovementStats:
 	var jump := mini(stack_count(Id.JUMP_HEIGHT), MAX_STACKS[Id.JUMP_HEIGHT])
 	stats.jump_velocity *= 1.0 + JUMP_HEIGHT_PER_STACK * jump
 
+	if stack_count(Id.DOUBLE_JUMP) > 0:
+		stats.air_jumps += 1
+		stats.jump_velocity *= 1.0 - DOUBLE_JUMP_HEIGHT_PENALTY
+
+	if stack_count(Id.DOUBLE_DASH) > 0:
+		stats.dash_charges += 1
+		stats.dash_duration *= 1.0 - DOUBLE_DASH_DISTANCE_PENALTY
+
 	var fall := mini(stack_count(Id.SLOW_FALL), MAX_STACKS[Id.SLOW_FALL])
 	var fall_factor := 1.0 / (1.0 + SLOW_FALL_PER_STACK * fall)
 	stats.fall_gravity *= fall_factor
@@ -112,6 +154,19 @@ func summary(scale: float, bank_count := 0, charges: Dictionary = {}) -> String:
 	return " · ".join(parts)
 
 
+static func rarity_of(id: Id) -> Rarity:
+	return RARITY[id]
+
+
+static func rarity_name(rarity: Rarity) -> String:
+	match rarity:
+		Rarity.COMMON:
+			return "Common"
+		Rarity.RARE:
+			return "Rare"
+	return ""
+
+
 static func name_of(id: Id) -> String:
 	match id:
 		Id.SLOW_TIME:
@@ -126,15 +181,24 @@ static func name_of(id: Id) -> String:
 			return "Checkpoint"
 		Id.REWIND:
 			return "Rewind"
+		Id.DOUBLE_JUMP:
+			return "Double Jump"
+		Id.DOUBLE_DASH:
+			return "Double Dash"
+		Id.POGO_HEIGHT:
+			return "Pogo Height"
+		Id.GRAPPLE_REACH:
+			return "Grapple Reach"
 	return ""
 
 
 ## Up to `count` distinct power-ups that can still take a stack, in offer order.
 ## `rng` returns a float in [0, 1), the same contract as `randf`.
-func roll_offer(count := 3, rng: Callable = Callable()) -> Array[Id]:
+## Pogo height and grapple reach are offered only for the character who can use them.
+func roll_offer(count := 3, rng: Callable = Callable(), character: PlayerBody = null) -> Array[Id]:
 	var pool: Array[Id] = []
 	for id: Id in _ORDER:
-		if stack_count(id) < MAX_STACKS[id]:
+		if stack_count(id) < MAX_STACKS[id] and _offered_to(id, character):
 			pool.append(id)
 	var random := rng if rng.is_valid() else func() -> float: return randf()
 	for i in range(pool.size() - 1, 0, -1):
@@ -162,4 +226,22 @@ static func describe(id: Id) -> String:
 			return "Potion: press Potion to plant a respawn flag. Limited charges (usually 1)."
 		Id.REWIND:
 			return "Potion: press Potion to rewind to any moment since your last respawn. Limited charges (usually 1)."
+		Id.DOUBLE_JUMP:
+			return "+1 air jump. −%d%% jump height." % roundi(DOUBLE_JUMP_HEIGHT_PENALTY * 100.0)
+		Id.DOUBLE_DASH:
+			return "2 dash charges. −%d%% dash distance." % roundi(DOUBLE_DASH_DISTANCE_PENALTY * 100.0)
+		Id.POGO_HEIGHT:
+			return "Higher pogo bounces (+%d%% bounce height per stack)." % roundi(POGO_HEIGHT_PER_STACK * 100.0)
+		Id.GRAPPLE_REACH:
+			return "Longer grapple (+%d%% reach per stack)." % roundi(GRAPPLE_REACH_PER_STACK * 100.0)
 	return ""
+
+
+static func _offered_to(id: Id, character: PlayerBody) -> bool:
+	match id:
+		Id.POGO_HEIGHT:
+			return character != null and character.uses_pogo_surfaces
+		Id.GRAPPLE_REACH:
+			return character != null and character.uses_grapple_surfaces
+		_:
+			return true

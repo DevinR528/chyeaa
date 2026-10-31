@@ -64,6 +64,18 @@ var side_lock_left := 0.0
 var strike_buffer_left := 0.0
 
 
+var _base_bounce_tiles := 0.0
+var _bounce_base_ready := false
+
+
+func apply_build(build: RunBuild) -> void:
+	if not _bounce_base_ready:
+		_base_bounce_tiles = bounce_tiles
+		_bounce_base_ready = true
+	var stacks := mini(build.stack_count(RunBuild.Id.POGO_HEIGHT), RunBuild.MAX_STACKS[RunBuild.Id.POGO_HEIGHT])
+	bounce_tiles = _base_bounce_tiles * (1.0 + RunBuild.POGO_HEIGHT_PER_STACK * stacks)
+
+
 func reset() -> void:
 	state = State.INACTIVE
 	strike_left = 0.0

@@ -26,6 +26,8 @@ const TILE := 8.0
 @export var dash_speed := 98.0 * TILE
 @export_range(0.0, 0.5, 0.005) var dash_duration := 0.12
 @export_range(0.0, 5.0, 0.05) var dash_cooldown := 2.0
+## Dashes available before a refresh. Landing and the cooldown both refill this.
+@export_range(1, 3, 1) var dash_charges := 1
 @export_range(0.0, 1.0, 0.01) var dash_air_momentum := 0.0
 
 @export_group("Contacts")

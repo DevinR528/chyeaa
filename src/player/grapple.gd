@@ -51,6 +51,16 @@ var jump_grace_left := 0.0
 ## The prop the hook rides, or null when latched to a tile.
 var attached_prop: TileProp
 var _hook_offset := Vector2.ZERO
+var _base_reach_tiles := 0.0
+var _reach_base_ready := false
+
+
+func apply_build(build: RunBuild) -> void:
+	if not _reach_base_ready:
+		_base_reach_tiles = reach_tiles
+		_reach_base_ready = true
+	var stacks := mini(build.stack_count(RunBuild.Id.GRAPPLE_REACH), RunBuild.MAX_STACKS[RunBuild.Id.GRAPPLE_REACH])
+	reach_tiles = _base_reach_tiles * (1.0 + RunBuild.GRAPPLE_REACH_PER_STACK * stacks)
 
 
 func reset() -> void:

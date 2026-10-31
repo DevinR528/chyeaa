@@ -69,6 +69,7 @@ var move_state := MovementState.FALL
 var coyote_time_left := 0.0
 var jump_buffer_left := 0.0
 var air_jumps_left := 0
+var dashes_left := 0
 var jump_cuttable := true
 var jump_held_previous := false
 
@@ -100,6 +101,7 @@ func _ready() -> void:
 		stats.set(property, stat_overrides[property])
 	base_stats = stats.copy()
 	air_jumps_left = stats.air_jumps
+	dashes_left = stats.dash_charges
 	_touch_sensor = _add_sensor(&"TouchSensor", TOUCH_SENSOR_INSET, TRIGGER_LAYERS)
 	_touch_sensor.body_shape_entered.connect(_on_touch_sensor_body_shape_entered)
 	var crush_sensor := _add_sensor(&"CrushSensor", CRUSH_SENSOR_INSET, PhysicsLayers.WORLD)
@@ -157,6 +159,14 @@ func tick(delta: float, frame: PlayerInputFrame) -> void:
 ## Replaces `stats` from `base_stats`. Safe to call again for the same build.
 func apply_build(build: RunBuild) -> void:
 	stats = build.recompute(base_stats)
+	if ability != null:
+		ability.apply_build(build)
+	# Grounded apply (reward pick, character switch) must refill charges so a
+	# new Double Jump or Double Dash stack is usable immediately.
+	if is_on_floor():
+		air_jumps_left = stats.air_jumps
+		dashes_left = stats.dash_charges
+
 
 
 ## World-space collision box; triggers and debug hitboxes read this.
@@ -183,6 +193,7 @@ func respawn(feet: Vector2, hold_motion := false) -> void:
 	jump_held_previous = false
 	dash_time_left = 0.0
 	dash_cooldown_left = 0.0
+	dashes_left = stats.dash_charges
 	dash_velocity_x = 0.0
 	was_airborne = false
 	fall_duration = 0.0
@@ -262,6 +273,7 @@ func apply_jump(
 
 func refresh_dash() -> void:
 	dash_cooldown_left = 0.0
+	dashes_left = stats.dash_charges
 	dash_ready.emit()
 
 
@@ -380,6 +392,7 @@ func _tick_timers(delta: float, input_frame: PlayerInputFrame, was_on_floor: boo
 	if dash_cooldown_left > 0.0:
 		dash_cooldown_left = maxf(0.0, dash_cooldown_left - delta)
 		if is_zero_approx(dash_cooldown_left):
+			dashes_left = stats.dash_charges
 			dash_ready.emit()
 
 	if dash_time_left > 0.0:
@@ -389,14 +402,18 @@ func _tick_timers(delta: float, input_frame: PlayerInputFrame, was_on_floor: boo
 
 
 func _try_dash(input_frame: PlayerInputFrame) -> void:
-	if move_state == MovementState.DASH or dash_cooldown_left > 0.0 or not input_frame.dash_pressed:
+	if move_state == MovementState.DASH or dashes_left <= 0 or not input_frame.dash_pressed:
 		return
 
 	var direction := signf(input_frame.move.x) if not is_zero_approx(input_frame.move.x) else facing
 	facing = direction
 	move_state = MovementState.DASH
+	dashes_left -= 1
 	dash_time_left = stats.dash_duration
-	dash_cooldown_left = stats.dash_cooldown
+	# The last charge starts the same cooldown a single dash always did.
+	# Landing or that cooldown refills every charge together.
+	if dashes_left == 0:
+		dash_cooldown_left = stats.dash_cooldown
 	dash_velocity_x = velocity.x * stats.dash_air_momentum + direction * stats.dash_speed
 	velocity = Vector2(dash_velocity_x, 0.0)
 	dashed.emit(direction)
